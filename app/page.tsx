@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import subjects from '@/config/subjects.json'
 
 export default function Home() {
