@@ -1,5 +1,10 @@
 import subjects from '@/config/subjects.json'
 
+interface Subject {
+  id: string;
+  name: string;
+}
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 transition-colors duration-200">
@@ -28,7 +33,7 @@ export default function Home() {
           {/* Subject Dropdown */}
           <select className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200">
             <option value="">Select Subject</option>
-            {subjects.subjects.map((subject) => (
+            {subjects.subjects.map((subject: Subject) => (
               <option key={subject.id} value={subject.id}>
                 {subject.name}
               </option>
@@ -38,7 +43,7 @@ export default function Home() {
           {/* Complexity Dropdown */}
           <select className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200">
             <option value="">Select Complexity</option>
-            {subjects.complexity.map((level) => (
+            {subjects.complexity.map((level: Subject) => (
               <option key={level.id} value={level.id}>
                 {level.name}
               </option>
