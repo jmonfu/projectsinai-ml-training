@@ -1,13 +1,13 @@
-import React from 'react';
-import { Inter } from 'next/font/google';
-import './globals.css';
-import Navigation from '../components/layout/Navigation';
+import "./globals.css";
+import { Inter } from "next/font/google";
+import Header from '@/components/layout/Header'
+import Footer from '@/components/layout/Footer'
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: 'ProjectIn AI',
-  description: 'Showcase of AI Projects',
+  title: "ProjectIn.AI - AI Projects Showcase",
+  description: "A collection of innovative AI projects and experiments",
 };
 
 export default function RootLayout({
@@ -18,9 +18,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Navigation />
-        <main>{children}</main>
+        <div className="min-h-screen flex flex-col">
+          <Header />
+          <main className="flex-grow">
+            {children}
+          </main>
+          <Footer />
+        </div>
       </body>
     </html>
   );
-} 
+}
