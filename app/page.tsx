@@ -1,3 +1,5 @@
+'use client';
+
 import subjects from '@/config/subjects.json'
 
 interface Subject {
