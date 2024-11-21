@@ -1,6 +1,7 @@
 'use client';
 
 import subjects from '@/config/subjects.json'
+import Link from 'next/link';
 
 interface Subject {
   id: string;
@@ -67,18 +68,21 @@ export default function Home() {
                 </span>
               </div>
               <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
-                Project Name
+                SmartSynch
               </h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
-                A sophisticated AI project showcasing advanced machine learning techniques...
+                A sophisticated AI time tracking and task management system.
               </p>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-blue-600 dark:text-blue-400">
-                  #MachineLearning
+                  #AI #DataProcessing
                 </span>
-                <button className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition-opacity">
+                <Link 
+                  href="/projects/SmartSynch"
+                  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition-opacity inline-block text-center"
+                >
                   View Project
-                </button>
+                </Link>
               </div>
             </div>
           </div>
