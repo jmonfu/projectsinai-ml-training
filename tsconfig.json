@@ -19,8 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./app/*"],
-      "@config/*": ["./app/config/*"]
+      "@/*": ["./src/*"],
+      "@config/*": ["./src/config/*"]
     },
     "baseUrl": "."
   },

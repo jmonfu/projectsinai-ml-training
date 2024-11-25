@@ -1,6 +1,6 @@
 // src/lib/projects.ts
 
-import { Project } from '@/types';
+import { Project } from '../types';
 
 export const projects: Project[] = [
   // Add your projects here
