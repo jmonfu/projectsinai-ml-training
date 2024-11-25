@@ -1,6 +1,6 @@
 'use client';
 
-import subjects from '../app/config/subjects.json'
+import { subjectsData } from './lib/constants';
 import Link from 'next/link';
 
 interface Subject {
@@ -36,7 +36,7 @@ export default function Home() {
           {/* Subject Dropdown */}
           <select className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200">
             <option value="">Select Subject</option>
-            {subjects.subjects.map((subject: Subject) => (
+            {subjectsData.subjects.map((subject: Subject) => (
               <option key={subject.id} value={subject.id}>
                 {subject.name}
               </option>
@@ -46,7 +46,7 @@ export default function Home() {
           {/* Complexity Dropdown */}
           <select className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200">
             <option value="">Select Complexity</option>
-            {subjects.complexity.map((level: Subject) => (
+            {subjectsData.complexity.map((level: Subject) => (
               <option key={level.id} value={level.id}>
                 {level.name}
               </option>
@@ -64,7 +64,7 @@ export default function Home() {
                   AI
                 </div>
                 <span className="px-3 py-1 text-sm rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">
-                  {subjects.complexity[0].name}
+                  {subjectsData.complexity[0].name}
                 </span>
               </div>
               <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
