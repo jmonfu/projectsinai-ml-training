@@ -1,6 +1,6 @@
 'use client';
 
-import subjects from '../app/config/subjects.json'
+import subjects from './config/subjects.json'
 import Link from 'next/link';
 
 interface Subject {
