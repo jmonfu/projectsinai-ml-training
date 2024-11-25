@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 
 const menuItems = [
     { name: "Home", icon: Home, action: "/" },
-    { name: "All Tasks", icon: Timer, action: "tasks" },
     { name: "Add Task", icon: PlusCircle, action: "new" },
     { name: "Time Tracking", icon: Clock, action: "tracking" },
     { name: "Categories", icon: Tag, action: "categories" },
