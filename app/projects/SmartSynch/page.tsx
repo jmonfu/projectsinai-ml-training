@@ -7,7 +7,6 @@ import TaskList from '../../components/SmartSynch/tasks/TaskList';
 import { Card } from "../../components/common/Card";
 
 export default function SmartSynchPage() {
-  const [currentPage, setCurrentPage] = useState("new");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
@@ -30,7 +29,7 @@ export default function SmartSynchPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header onNavigate={setCurrentPage} />
+      <Header onNavigate={(page: string) => {}} />
       <main className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column - Input Form */}
