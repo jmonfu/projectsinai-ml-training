@@ -33,6 +33,11 @@ export interface Task {
   category: TaskCategory;
   priority: 'high' | 'medium' | 'low';
   timeSpent?: number;
+  createdAt: string;
+  timeRecords: {
+    timestamp: string;
+    seconds: number;
+  }[];
 }
 
 export default function TaskForm({ onSubmit, initialTask, isEditing = false }: TaskFormProps) {
@@ -42,7 +47,9 @@ export default function TaskForm({ onSubmit, initialTask, isEditing = false }: T
     description: '',
     priority: 'medium',
     category: 'development',
-    timeSpent: undefined
+    timeSpent: undefined,
+    createdAt: new Date().toISOString(),
+    timeRecords: []
   });
 
   useEffect(() => {
@@ -66,7 +73,9 @@ export default function TaskForm({ onSubmit, initialTask, isEditing = false }: T
       description: '',
       priority: 'medium',
       category: 'development',
-      timeSpent: undefined
+      timeSpent: undefined,
+      createdAt: new Date().toISOString(),
+      timeRecords: []
     });
   };
 

@@ -51,17 +51,29 @@ export default function SmartSynch() {
   };
 
   const handleTimeUpdate = (taskId: string, seconds: number) => {
-    console.log('Time update called with:', taskId, seconds);
-    setTasks(prevTasks => {
-      const newTasks = prevTasks.map(task => 
-        task.id === taskId 
-          ? { ...task, timeSpent: seconds }
-          : task
-      );
-      console.log('Saving tasks:', newTasks);
-      localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(newTasks));
-      return newTasks;
-    });
+    setTasks(prevTasks => prevTasks.map(task => {
+      if (task.id === taskId) {
+        return {
+          ...task,
+          timeSpent: seconds,
+          timeRecords: [
+            ...(task.timeRecords || []),
+            { timestamp: new Date().toISOString(), seconds }
+          ]
+        };
+      }
+      return task;
+    }));
+  };
+
+  const handleCreateTask = (task: Omit<Task, 'id' | 'createdAt' | 'timeRecords'>) => {
+    const newTask = {
+      ...task,
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+      timeRecords: [],
+    };
+    setTasks(prev => [...prev, newTask]);
   };
 
   useEffect(() => {
