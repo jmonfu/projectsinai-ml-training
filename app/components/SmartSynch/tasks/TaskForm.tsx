@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from 'react';
 import { Calendar, Clock, Flag, Folder, Search, X } from 'lucide-react'
 import { Button } from "../../common/Button"
 import { Card } from "../../common/Card"
@@ -38,7 +38,7 @@ export interface Task {
 }
 
 export default function TaskForm({ onSubmit, initialTask, isEditing = false }: TaskFormProps) {
-  const [task, setTask] = useState<Task>(initialTask || {
+  const [task, setTask] = useState<Task>({
     id: crypto.randomUUID(),
     title: '',
     description: '',
@@ -46,6 +46,12 @@ export default function TaskForm({ onSubmit, initialTask, isEditing = false }: T
     category: 'development',
     estimatedTime: undefined
   });
+
+  useEffect(() => {
+    if (initialTask) {
+      setTask(initialTask);
+    }
+  }, [initialTask]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,7 +134,7 @@ export default function TaskForm({ onSubmit, initialTask, isEditing = false }: T
                     task.priority === 'medium' ? 'text-orange-500' :
                     'text-green-500'
                   }`} />
-                  <span className="text-gray-900">{getPriorityLabel(task.priority)}</span>
+                  <span className="text-gray-900">{task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority</span>
                 </div>
               </SelectTrigger>
               <SelectContent>

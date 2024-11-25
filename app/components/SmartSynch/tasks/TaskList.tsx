@@ -9,7 +9,7 @@ interface TaskListProps {
 }
 
 export default function TaskList({ tasks, onEdit, onDelete }: TaskListProps) {
-  // Group tasks by category
+  // Group tasks by category and sort by priority
   const tasksByCategory = tasks.reduce((acc, task) => {
     const category = task.category;
     if (!acc[category]) {
@@ -18,6 +18,17 @@ export default function TaskList({ tasks, onEdit, onDelete }: TaskListProps) {
     acc[category].push(task);
     return acc;
   }, {} as Record<TaskCategory, Task[]>);
+
+  // Sort function for priorities
+  const priorityOrder = { high: 0, medium: 1, low: 2 };
+  const sortByPriority = (a: Task, b: Task) => {
+    return priorityOrder[a.priority] - priorityOrder[b.priority];
+  };
+
+  // Sort tasks within each category
+  Object.values(tasksByCategory).forEach(categoryTasks => {
+    categoryTasks.sort(sortByPriority);
+  });
 
   const getPriorityColor = (priority: Task['priority']) => {
     switch (priority) {
@@ -75,7 +86,10 @@ export default function TaskList({ tasks, onEdit, onDelete }: TaskListProps) {
 
                     <div className="flex items-center gap-2">
                       <Button
-                        onClick={() => onEdit(task)}
+                        onClick={() => {
+                          onEdit(task);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
                         variant="ghost"
                         size="sm"
                         className="h-8 w-8 p-0 hover:bg-gray-100"
