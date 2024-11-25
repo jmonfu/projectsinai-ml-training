@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Timer, Settings, PlusCircle, Clock, Tag, Home } from "lucide-react";
+import { Settings, PlusCircle, Clock, Tag, Home } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const menuItems = [

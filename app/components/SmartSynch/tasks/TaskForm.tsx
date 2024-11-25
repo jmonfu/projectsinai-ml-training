@@ -70,15 +70,6 @@ export default function TaskForm({ onSubmit, initialTask, isEditing = false }: T
     });
   };
 
-  const getPriorityLabel = (priority: string) => {
-    const labels = {
-      low: 'Low Priority',
-      medium: 'Medium Priority',
-      high: 'High Priority'
-    };
-    return labels[priority as keyof typeof labels] || priority;
-  };
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">

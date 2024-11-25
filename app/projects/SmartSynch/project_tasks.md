@@ -20,9 +20,9 @@ Technical Documentation
 ### 2.1 Task Management
 **Basic Features:**
 - Task 2.1.1 - Task creation and editing
-- Task 2.1.2 - Time tracking with start/stop
-- Task 2.1.3 - Category assignment
-- Task 2.1.4 - Priority levels
+- Task 2.1.2 - Category assignment
+- Task 2.1.3 - Priority levels
+- Task 2.1.4 - Time tracking with start/stop
 
 **AI Enhancements & Technologies:**
 - Task 2.2.1 - **Smart Task Categorization**
