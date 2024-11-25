@@ -30,9 +30,8 @@ export interface Task {
   id: string;
   title: string;
   description: string;
-  priority: 'low' | 'medium' | 'high';
   category: TaskCategory;
-  estimatedTime?: number;
+  priority: 'high' | 'medium' | 'low';
   timeSpent?: number;
 }
 
@@ -43,7 +42,7 @@ export default function TaskForm({ onSubmit, initialTask, isEditing = false }: T
     description: '',
     priority: 'medium',
     category: 'development',
-    estimatedTime: undefined
+    timeSpent: undefined
   });
 
   useEffect(() => {
@@ -67,7 +66,7 @@ export default function TaskForm({ onSubmit, initialTask, isEditing = false }: T
       description: '',
       priority: 'medium',
       category: 'development',
-      estimatedTime: undefined
+      timeSpent: undefined
     });
   };
 
@@ -124,7 +123,7 @@ export default function TaskForm({ onSubmit, initialTask, isEditing = false }: T
                     task.priority === 'medium' ? 'text-orange-500' :
                     'text-green-500'
                   }`} />
-                  <span className="text-gray-900">{task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority</span>
+                  <span className="text-gray-900">{task.priority?.charAt(0).toUpperCase() + task.priority?.slice(1)} Priority</span>
                 </div>
               </SelectTrigger>
               <SelectContent>
@@ -148,7 +147,7 @@ export default function TaskForm({ onSubmit, initialTask, isEditing = false }: T
               <SelectTrigger className="w-full bg-white text-gray-900">
                 <div className="flex items-center gap-2">
                   <Folder className="h-4 w-4" />
-                  <span className="text-gray-900">{TASK_CATEGORIES[task.category].name}</span>
+                  <span className="text-gray-900">{TASK_CATEGORIES[task.category]?.name}</span>
                 </div>
               </SelectTrigger>
               <SelectContent>

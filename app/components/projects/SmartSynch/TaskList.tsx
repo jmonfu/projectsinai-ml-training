@@ -2,6 +2,7 @@ import { Task, TASK_CATEGORIES, TaskCategory } from './TaskForm';
 import { Button } from '../../../components/common/Button';
 import { Pencil, Trash2, Flag } from 'lucide-react';
 import { TimeTracker } from './TimeTracker';
+import { useEffect } from 'react';
 
 interface TaskListProps {
   tasks: Task[];
@@ -11,6 +12,19 @@ interface TaskListProps {
 }
 
 export default function TaskList({ tasks, onEdit, onDelete, onTimeUpdate }: TaskListProps) {
+  useEffect(() => {
+    const storedTasks = localStorage.getItem('tasks');
+    if (storedTasks) {
+      const parsedTasks = JSON.parse(storedTasks);
+      // You'll need to handle this in the parent component
+      // setTasks(parsedTasks);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }, [tasks]);
+
   // Group tasks by category and sort by priority
   const tasksByCategory = tasks.reduce((acc, task) => {
     const category = task.category;
@@ -110,6 +124,7 @@ export default function TaskList({ tasks, onEdit, onDelete, onTimeUpdate }: Task
                   </div>
                   <TimeTracker 
                     taskId={task.id}
+                    initialTime={task.timeSpent || 0}
                     onTimeUpdate={(seconds) => {
                       onTimeUpdate?.(task.id, seconds);
                     }}

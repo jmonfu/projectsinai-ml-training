@@ -46,13 +46,21 @@ export function TimeTracker({ taskId, initialTime = 0, onTimeUpdate }: TimeTrack
       .padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const handleToggle = () => {
+    if (isRunning) {
+      // When stopping, ensure we save the final time
+      onTimeUpdate?.(elapsedTime);
+    }
+    setIsRunning(!isRunning);
+  };
+
   return (
     <div className="flex items-center gap-3">
       <div className="font-mono text-lg bg-gray-100 px-3 py-1 rounded text-gray-900 font-medium">
         {formatTime(elapsedTime)}
       </div>
       <Button
-        onClick={() => setIsRunning(!isRunning)}
+        onClick={handleToggle}
         className={`text-white px-4 py-2 ${
           isRunning 
             ? 'bg-red-500 hover:bg-red-600' 

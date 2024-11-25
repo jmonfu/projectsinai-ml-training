@@ -1,22 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "../../components/projects/SmartSynch/layout/Header";
 import TaskForm, { Task } from '../../components/projects/SmartSynch/TaskForm';
 import TaskList from '../../components/projects/SmartSynch/TaskList';
 import { Card } from "../../components/common/Card";
 
+const TASKS_STORAGE_KEY = 'smartsynch_tasks';
+
 export default function SmartSynch() {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    if (typeof window !== 'undefined') {
+      const savedTasks = localStorage.getItem(TASKS_STORAGE_KEY);
+      if (savedTasks) {
+        try {
+          return JSON.parse(savedTasks);
+        } catch (error) {
+          console.error('Error parsing tasks:', error);
+          return [];
+        }
+      }
+    }
+    return [];
+  });
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+
+  // Save tasks to localStorage whenever they change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
+    }
+  }, [tasks]);
 
   const handleTaskSubmit = (task: Task) => {
     if (editingTask) {
-      setTasks(tasks.map(t => t.id === task.id ? task : t));
+      setTasks(prevTasks => prevTasks.map(t => t.id === task.id ? task : t));
       setEditingTask(null);
     } else {
-      setTasks([...tasks, task]);
+      setTasks(prevTasks => [...prevTasks, task]);
     }
+    console.log('Task submitted:', task);
   };
 
   const handleEditTask = (task: Task) => {
@@ -28,12 +51,23 @@ export default function SmartSynch() {
   };
 
   const handleTimeUpdate = (taskId: string, seconds: number) => {
-    setTasks(tasks.map(task => 
-      task.id === taskId 
-        ? { ...task, timeSpent: seconds }
-        : task
-    ));
+    console.log('Time update called with:', taskId, seconds);
+    setTasks(prevTasks => {
+      const newTasks = prevTasks.map(task => 
+        task.id === taskId 
+          ? { ...task, timeSpent: seconds }
+          : task
+      );
+      console.log('Saving tasks:', newTasks);
+      localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(newTasks));
+      return newTasks;
+    });
   };
+
+  useEffect(() => {
+    const saved = localStorage.getItem(TASKS_STORAGE_KEY);
+    console.log('Loaded from storage:', saved);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
