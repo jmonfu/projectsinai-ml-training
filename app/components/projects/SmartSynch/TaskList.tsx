@@ -1,14 +1,16 @@
 import { Task, TASK_CATEGORIES, TaskCategory } from './TaskForm';
 import { Button } from '../../../components/common/Button';
 import { Pencil, Trash2, Flag } from 'lucide-react';
+import { TimeTracker } from './TimeTracker';
 
 interface TaskListProps {
   tasks: Task[];
   onEdit: (task: Task) => void;
   onDelete: (taskId: string) => void;
+  onTimeUpdate?: (taskId: string, seconds: number) => void;
 }
 
-export default function TaskList({ tasks, onEdit, onDelete }: TaskListProps) {
+export default function TaskList({ tasks, onEdit, onDelete, onTimeUpdate }: TaskListProps) {
   // Group tasks by category and sort by priority
   const tasksByCategory = tasks.reduce((acc, task) => {
     const category = task.category;
@@ -106,6 +108,12 @@ export default function TaskList({ tasks, onEdit, onDelete }: TaskListProps) {
                       </Button>
                     </div>
                   </div>
+                  <TimeTracker 
+                    taskId={task.id}
+                    onTimeUpdate={(seconds) => {
+                      onTimeUpdate?.(task.id, seconds);
+                    }}
+                  />
                 </div>
               ))}
             </div>

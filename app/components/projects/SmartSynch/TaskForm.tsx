@@ -33,6 +33,7 @@ export interface Task {
   priority: 'low' | 'medium' | 'high';
   category: TaskCategory;
   estimatedTime?: number;
+  timeSpent?: number;
 }
 
 export default function TaskForm({ onSubmit, initialTask, isEditing = false }: TaskFormProps) {

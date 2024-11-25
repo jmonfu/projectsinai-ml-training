@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Header from "../../components/SmartSynch/layout/Header";
-import TaskForm, { Task } from '../../components/SmartSynch/tasks/TaskForm';
-import TaskList from '../../components/SmartSynch/tasks/TaskList';
+import Header from "../../components/projects/SmartSynch/layout/Header";
+import TaskForm, { Task } from '../../components/projects/SmartSynch/TaskForm';
+import TaskList from '../../components/projects/SmartSynch/TaskList';
 import { Card } from "../../components/common/Card";
 
 export default function SmartSynch() {
@@ -25,6 +25,14 @@ export default function SmartSynch() {
 
   const handleDeleteTask = (taskId: string) => {
     setTasks(tasks.filter(task => task.id !== taskId));
+  };
+
+  const handleTimeUpdate = (taskId: string, seconds: number) => {
+    setTasks(tasks.map(task => 
+      task.id === taskId 
+        ? { ...task, timeSpent: seconds }
+        : task
+    ));
   };
 
   return (
@@ -77,6 +85,7 @@ export default function SmartSynch() {
                 tasks={tasks}
                 onEdit={handleEditTask}
                 onDelete={handleDeleteTask}
+                onTimeUpdate={handleTimeUpdate}
               />
             </Card>
           </div>
