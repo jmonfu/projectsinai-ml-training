@@ -5,6 +5,7 @@ import { Button } from '../../../components/common/Button';
 import { Pencil, Trash2, Flag } from 'lucide-react';
 import { TimeTracker } from './TimeTracker';
 import { useEffect, useState } from 'react';
+import { FloatingTimer } from './FloatingTimer';
 
 interface TaskListProps {
   tasks: Task[];
@@ -25,6 +26,11 @@ const formatDate = (dateString: string) => {
 
 export default function TaskList({ tasks, onEdit, onDelete, onTimeUpdate }: TaskListProps) {
   const [mounted, setMounted] = useState(false);
+  const [activeTimer, setActiveTimer] = useState<{
+    taskId: string;
+    taskName: string;
+    seconds: number;
+  } | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -69,6 +75,28 @@ export default function TaskList({ tasks, onEdit, onDelete, onTimeUpdate }: Task
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
   };
 
+  const handleStartTimer = (task: Task) => {
+    setActiveTimer({
+      taskId: task.id,
+      taskName: task.title,
+      seconds: task.timeSpent || 0
+    });
+  };
+
+  const handleStopTimer = () => {
+    if (activeTimer && onTimeUpdate) {
+      onTimeUpdate(activeTimer.taskId, activeTimer.seconds);
+      setActiveTimer(null);
+    }
+  };
+
+  const handleTimeUpdate = (taskId: string, seconds: number) => {
+    if (activeTimer && taskId === activeTimer.taskId) {
+      setActiveTimer(prev => prev ? { ...prev, seconds } : null);
+    }
+    onTimeUpdate?.(taskId, seconds);
+  };
+
   return (
     <div className="space-y-8">
       {tasks.length === 0 ? (
@@ -110,13 +138,9 @@ export default function TaskList({ tasks, onEdit, onDelete, onTimeUpdate }: Task
                         {task.timeRecords && task.timeRecords.length > 0 && (
                           <div className="mt-2 text-xs text-gray-500">
                             <p>Time Records:</p>
-                            <ul className="ml-2">
-                              {task.timeRecords.map((record, index) => (
-                                <li key={index}>
-                                  Stopped at: {formatDate(record.timestamp)} - Duration: {Math.floor(record.seconds / 60)} minutes
-                                </li>
-                              ))}
-                            </ul>
+                            <div className="ml-2">
+                              Stopped at: {formatDate(task.timeRecords[task.timeRecords.length - 1].timestamp)} - Duration: {Math.floor(task.timeRecords[task.timeRecords.length - 1].seconds / 60)} minutes
+                            </div>
                           </div>
                         )}
                         
@@ -153,9 +177,8 @@ export default function TaskList({ tasks, onEdit, onDelete, onTimeUpdate }: Task
                     <TimeTracker 
                       taskId={task.id}
                       initialTime={task.timeSpent || 0}
-                      onTimeUpdate={(seconds) => {
-                        onTimeUpdate?.(task.id, seconds);
-                      }}
+                      onTimeUpdate={(seconds) => handleTimeUpdate(task.id, seconds)}
+                      onStart={() => handleStartTimer(task)}
                     />
                   </div>
                 ))}
@@ -163,6 +186,13 @@ export default function TaskList({ tasks, onEdit, onDelete, onTimeUpdate }: Task
             </div>
           );
         })
+      )}
+      {activeTimer && (
+        <FloatingTimer
+          seconds={activeTimer.seconds}
+          taskName={activeTimer.taskName}
+          onStop={handleStopTimer}
+        />
       )}
     </div>
   );

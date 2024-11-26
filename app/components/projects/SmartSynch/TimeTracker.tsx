@@ -5,12 +5,18 @@ import { Button } from '../../../components/common/Button';
 
 interface TimeTrackerProps {
   taskId: string;
-  initialTime?: number;
-  onTimeUpdate?: (seconds: number, timestamp?: string) => void;
-  task?: { timeRecords: { timestamp: string; seconds: number; }[] };
+  initialTime: number;
+  onTimeUpdate: (seconds: number) => void;
+  onStart: () => void;
+  task?: {
+    timeRecords?: Array<{
+      timestamp: string;
+      seconds: number;
+    }>;
+  };
 }
 
-export function TimeTracker({ taskId, initialTime = 0, onTimeUpdate, task }: TimeTrackerProps) {
+export function TimeTracker({ taskId, initialTime = 0, onTimeUpdate, onStart, task }: TimeTrackerProps) {
   const [mounted, setMounted] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(initialTime);
@@ -64,7 +70,7 @@ export function TimeTracker({ taskId, initialTime = 0, onTimeUpdate, task }: Tim
     if (isRunning) {
       const stopTimestamp = new Date().toISOString();
       console.log('Stopping timer:', { elapsedTime, stopTimestamp });
-      onTimeUpdate?.(elapsedTime, stopTimestamp);
+      onTimeUpdate?.(elapsedTime);
     } else {
       console.log('Starting timer');
     }
@@ -91,13 +97,11 @@ export function TimeTracker({ taskId, initialTime = 0, onTimeUpdate, task }: Tim
       {/* Add this to show time records */}
       {task?.timeRecords && task.timeRecords.length > 0 && (
         <div className="mt-2 text-xs text-gray-500">
-          <ul className="space-y-1">
-            {task.timeRecords.map((record, index) => (
-              <li key={index}>
-                Stopped at: {formatDate(record.timestamp)} ({Math.floor(record.seconds / 60)}m {record.seconds % 60}s)
-              </li>
-            ))}
-          </ul>
+          <div>
+            Last stopped at: {formatDate(task.timeRecords[task.timeRecords.length - 1].timestamp)} (
+            {Math.floor(task.timeRecords[task.timeRecords.length - 1].seconds / 60)}m{' '}
+            {task.timeRecords[task.timeRecords.length - 1].seconds % 60}s)
+          </div>
         </div>
       )}
     </div>
