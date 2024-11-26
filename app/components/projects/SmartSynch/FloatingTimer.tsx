@@ -12,8 +12,8 @@ export function FloatingTimer({ seconds, taskName, onStop, isRunning }: Floating
 
   useEffect(() => {
     if (isRunning && !timerWindow) {
-      const width = 50;
-      const height = 50;
+      const width = 200;
+      const height = 100;
       const left = window.screenX + window.outerWidth - width;
       const top = window.screenY + window.outerHeight - height;
       
@@ -26,9 +26,15 @@ export function FloatingTimer({ seconds, taskName, onStop, isRunning }: Floating
       );
       
       if (newWindow) {
-        setTimerWindow(newWindow);
-        
-        // Add window close detection
+        newWindow.onload = () => {
+          setTimerWindow(newWindow);
+          newWindow.postMessage({ 
+            type: 'UPDATE_TIME', 
+            seconds, 
+            taskName 
+          }, '*');
+        };
+
         const checkWindow = setInterval(() => {
           if (newWindow.closed) {
             clearInterval(checkWindow);
@@ -37,7 +43,6 @@ export function FloatingTimer({ seconds, taskName, onStop, isRunning }: Floating
           }
         }, 1000);
 
-        // Clean up interval on unmount
         return () => {
           clearInterval(checkWindow);
           newWindow.close();

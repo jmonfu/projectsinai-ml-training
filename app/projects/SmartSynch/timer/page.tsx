@@ -18,6 +18,10 @@ export default function TimerPage() {
       }
     };
 
+    if (window.opener) {
+      window.opener.postMessage({ type: 'TIMER_READY' }, '*');
+    }
+
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
   }, []);
