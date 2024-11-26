@@ -21,16 +21,27 @@ export function FloatingTimer({ seconds, taskName, onStop, isRunning }: Floating
         `${window.location.origin}/projects/SmartSynch/timer?name=${encodeURIComponent(taskName)}`,
         'timer',
         `width=${width},height=${height},left=${left},top=${top},` +
-        'chrome=no,centerscreen=yes,resizable=no,scrollbars=no,' +
+        'chrome=yes,centerscreen=yes,resizable=yes,scrollbars=no,' +
         'status=no,toolbar=no,menubar=no,location=no'
       );
       
       if (newWindow) {
         setTimerWindow(newWindow);
-        // Immediately send initial time
-        setTimeout(() => {
-          newWindow.postMessage({ type: 'UPDATE_TIME', seconds, taskName }, '*');
-        }, 0);
+        
+        // Add window close detection
+        const checkWindow = setInterval(() => {
+          if (newWindow.closed) {
+            clearInterval(checkWindow);
+            onStop();
+            setTimerWindow(null);
+          }
+        }, 1000);
+
+        // Clean up interval on unmount
+        return () => {
+          clearInterval(checkWindow);
+          newWindow.close();
+        };
       }
     }
 
@@ -55,7 +66,24 @@ export function FloatingTimer({ seconds, taskName, onStop, isRunning }: Floating
     return () => window.removeEventListener('message', handleMessage);
   }, [onStop]);
 
-  return null;
+  return (
+    <div 
+      style={{
+        position: 'fixed',
+        right: '20px',
+        bottom: '20px',
+        zIndex: 1000,
+        background: 'white',
+        padding: '10px',
+        borderRadius: '8px',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+      }}
+    >
+      <div>{formatTime(seconds)}</div>
+      <div>{taskName}</div>
+      <button onClick={onStop}>Stop</button>
+    </div>
+  );
 }
 
 const formatTime = (secs: number) => {
