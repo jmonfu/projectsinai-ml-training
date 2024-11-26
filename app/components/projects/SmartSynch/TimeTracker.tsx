@@ -5,48 +5,40 @@ import { Button } from '../../../components/common/Button';
 
 interface TimeTrackerProps {
   taskId: string;
-  initialTime: number;
+  timeSpent: number;
   onTimeUpdate: (seconds: number) => void;
   onStart: () => void;
-  task?: {
-    timeRecords?: Array<{
-      timestamp: string;
-      seconds: number;
-    }>;
-  };
+  isActive?: boolean;
 }
 
-export function TimeTracker({ taskId, initialTime = 0, onTimeUpdate, onStart, task }: TimeTrackerProps) {
-  const [mounted, setMounted] = useState(false);
+export function TimeTracker({ taskId, timeSpent, onTimeUpdate, onStart, isActive = false }: TimeTrackerProps) {
+  const [seconds, setSeconds] = useState(timeSpent);
   const [isRunning, setIsRunning] = useState(false);
-  const [elapsedTime, setElapsedTime] = useState(initialTime);
-
-  const updateTime = useCallback((newTime: number) => {
-    setElapsedTime(newTime);
-    if (onTimeUpdate) {
-      requestAnimationFrame(() => onTimeUpdate(newTime));
-    }
-  }, [onTimeUpdate]);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    let intervalId: NodeJS.Timeout | undefined;
-
+    let interval: NodeJS.Timeout;
     if (isRunning) {
-      intervalId = setInterval(() => {
-        setElapsedTime(prev => prev + 1);
+      interval = setInterval(() => {
+        setSeconds(s => {
+          const newSeconds = s + 1;
+          requestAnimationFrame(() => onTimeUpdate?.(newSeconds));
+          return newSeconds;
+        });
       }, 1000);
     }
+    return () => clearInterval(interval);
+  }, [isRunning, onTimeUpdate]);
 
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [isRunning]);
+  useEffect(() => {
+    if (!isActive && isRunning) {
+      setIsRunning(false);
+    }
+  }, [isActive]);
 
   if (!mounted) {
     return null;
@@ -67,43 +59,32 @@ export function TimeTracker({ taskId, initialTime = 0, onTimeUpdate, onStart, ta
   };
 
   const handleToggle = () => {
-    if (isRunning) {
-      const stopTimestamp = new Date().toISOString();
-      console.log('Stopping timer:', { elapsedTime, stopTimestamp });
-      onTimeUpdate?.(elapsedTime);
+    if (!isRunning) {
+      setIsRunning(true);
+      onStart();
     } else {
-      console.log('Starting timer');
+      handleStop();
     }
-    setIsRunning(!isRunning);
+  };
+
+  const handleStop = () => {
+    setIsRunning(false);
+    onTimeUpdate(seconds);
   };
 
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-3">
         <div className="font-mono text-lg bg-gray-100 px-3 py-1 rounded text-gray-900 font-medium">
-          {formatTime(elapsedTime)}
+          {formatTime(seconds)}
         </div>
         <Button
           onClick={handleToggle}
-          className={`text-white px-4 py-2 ${
-            isRunning 
-              ? 'bg-red-500 hover:bg-red-600' 
-              : 'bg-blue-500 hover:bg-blue-600'
-          }`}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2"
         >
           {isRunning ? 'Stop' : 'Start'}
         </Button>
       </div>
-      {/* Add this to show time records */}
-      {task?.timeRecords && task.timeRecords.length > 0 && (
-        <div className="mt-2 text-xs text-gray-500">
-          <div>
-            Last stopped at: {formatDate(task.timeRecords[task.timeRecords.length - 1].timestamp)} (
-            {Math.floor(task.timeRecords[task.timeRecords.length - 1].seconds / 60)}m{' '}
-            {task.timeRecords[task.timeRecords.length - 1].seconds % 60}s)
-          </div>
-        </div>
-      )}
     </div>
   );
 }

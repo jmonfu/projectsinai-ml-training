@@ -11,7 +11,7 @@ interface TaskListProps {
   tasks: Task[];
   onEdit: (task: Task) => void;
   onDelete: (taskId: string) => void;
-  onTimeUpdate?: (taskId: string, seconds: number) => void;
+  onTimeUpdate?: (taskId: string, seconds: number, timeRecords: Array<{timestamp: string, seconds: number}>) => void;
 }
 
 const formatDate = (dateString: string) => {
@@ -35,6 +35,15 @@ export default function TaskList({ tasks, onEdit, onDelete, onTimeUpdate }: Task
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (activeTimer && tasks.length > 0) {
+      const task = tasks.find(t => t.id === activeTimer.taskId);
+      if (task?.timeSpent !== activeTimer.seconds) {
+        setActiveTimer(prev => prev ? { ...prev, seconds: task?.timeSpent || 0 } : null);
+      }
+    }
+  }, [tasks, activeTimer]);
 
   // Group tasks by category and sort by priority
   const tasksByCategory = tasks.reduce((acc, task) => {
@@ -85,16 +94,34 @@ export default function TaskList({ tasks, onEdit, onDelete, onTimeUpdate }: Task
 
   const handleStopTimer = () => {
     if (activeTimer && onTimeUpdate) {
-      onTimeUpdate(activeTimer.taskId, activeTimer.seconds);
+      const currentTime = new Date().toISOString();
+      
+      // Get the current task
+      const task = tasks.find(t => t.id === activeTimer.taskId);
+      if (!task) return;
+
+      // Create updated task with new time record
+      const updatedTask = {
+        ...task,
+        timeSpent: activeTimer.seconds,
+        timeRecords: [
+          ...(task.timeRecords || []),
+          {
+            timestamp: currentTime,
+            seconds: activeTimer.seconds
+          }
+        ]
+      };
+
+      // Update parent component
+      onTimeUpdate(activeTimer.taskId, activeTimer.seconds, updatedTask.timeRecords);
       setActiveTimer(null);
     }
   };
 
   const handleTimeUpdate = (taskId: string, seconds: number) => {
-    if (activeTimer && taskId === activeTimer.taskId) {
-      setActiveTimer(prev => prev ? { ...prev, seconds } : null);
-    }
-    onTimeUpdate?.(taskId, seconds);
+    const task = tasks.find(t => t.id === taskId);
+    onTimeUpdate?.(taskId, seconds, task?.timeRecords || []);
   };
 
   return (
@@ -176,9 +203,10 @@ export default function TaskList({ tasks, onEdit, onDelete, onTimeUpdate }: Task
                     </div>
                     <TimeTracker 
                       taskId={task.id}
-                      initialTime={task.timeSpent || 0}
+                      timeSpent={task.timeSpent || 0}
                       onTimeUpdate={(seconds) => handleTimeUpdate(task.id, seconds)}
                       onStart={() => handleStartTimer(task)}
+                      isActive={activeTimer?.taskId === task.id}
                     />
                   </div>
                 ))}
@@ -192,6 +220,7 @@ export default function TaskList({ tasks, onEdit, onDelete, onTimeUpdate }: Task
           seconds={activeTimer.seconds}
           taskName={activeTimer.taskName}
           onStop={handleStopTimer}
+          isRunning={true}
         />
       )}
     </div>

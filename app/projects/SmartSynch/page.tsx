@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Header from "../../components/projects/SmartSynch/layout/Header";
 import TaskForm, { Task } from '../../components/projects/SmartSynch/TaskForm';
 import TaskList from '../../components/projects/SmartSynch/TaskList';
@@ -50,16 +50,13 @@ export default function SmartSynch() {
     setTasks(tasks.filter(task => task.id !== taskId));
   };
 
-  const handleTimeUpdate = (taskId: string, seconds: number) => {
-    setTasks(prevTasks => prevTasks.map(task => {
+  const handleTimeUpdate = (taskId: string, seconds: number, timeRecords: Array<{timestamp: string, seconds: number}>) => {
+    setTasks(tasks.map(task => {
       if (task.id === taskId) {
         return {
           ...task,
           timeSpent: seconds,
-          timeRecords: [
-            ...(task.timeRecords || []),
-            { timestamp: new Date().toISOString(), seconds }
-          ]
+          timeRecords: timeRecords
         };
       }
       return task;
