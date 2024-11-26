@@ -12,19 +12,25 @@ export function FloatingTimer({ seconds, taskName, onStop, isRunning }: Floating
 
   useEffect(() => {
     if (isRunning && !timerWindow) {
-      const width = 160;
-      const height = 100;
+      const width = 50;
+      const height = 50;
       const left = window.screenX + window.outerWidth - width;
       const top = window.screenY + window.outerHeight - height;
       
       const newWindow = window.open(
         `${window.location.origin}/projects/SmartSynch/timer?name=${encodeURIComponent(taskName)}`,
-        '_blank',
-        `width=${width},height=${height},left=${left},top=${top}`
+        'timer',
+        `width=${width},height=${height},left=${left},top=${top},` +
+        'chrome=no,centerscreen=yes,resizable=no,scrollbars=no,' +
+        'status=no,toolbar=no,menubar=no,location=no'
       );
       
       if (newWindow) {
         setTimerWindow(newWindow);
+        // Immediately send initial time
+        setTimeout(() => {
+          newWindow.postMessage({ type: 'UPDATE_TIME', seconds, taskName }, '*');
+        }, 0);
       }
     }
 

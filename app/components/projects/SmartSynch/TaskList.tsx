@@ -39,11 +39,14 @@ export default function TaskList({ tasks, onEdit, onDelete, onTimeUpdate }: Task
   useEffect(() => {
     if (activeTimer && tasks.length > 0) {
       const task = tasks.find(t => t.id === activeTimer.taskId);
-      if (task?.timeSpent !== activeTimer.seconds) {
-        setActiveTimer(prev => prev ? { ...prev, seconds: task?.timeSpent || 0 } : null);
+      if (task && task.timeSpent !== undefined && task.timeSpent !== activeTimer.seconds) {
+        const diff = Math.abs(task.timeSpent - activeTimer.seconds);
+        if (diff > 1) {
+          setActiveTimer(prev => prev ? { ...prev, seconds: task.timeSpent || 0 } : null);
+        }
       }
     }
-  }, [tasks, activeTimer]);
+  }, [tasks]);
 
   // Group tasks by category and sort by priority
   const tasksByCategory = tasks.reduce((acc, task) => {

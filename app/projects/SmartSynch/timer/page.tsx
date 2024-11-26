@@ -35,16 +35,16 @@ export default function TimerPage() {
   };
 
   return (
-    <div className="p-3 h-screen bg-white">
-      <div className="text-sm font-medium text-gray-500 truncate">
+    <div className="p-2 h-screen bg-white overflow-hidden select-none">
+      <div className="text-xs font-medium text-gray-500 truncate mb-1">
         {taskName}
       </div>
-      <div className="text-xl font-bold text-gray-900 my-1">
+      <div className="text-lg font-bold text-gray-900">
         {formatTime(seconds)}
       </div>
       <button
         onClick={handleStop}
-        className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-3 rounded"
+        className="w-full bg-red-500 hover:bg-red-600 text-white text-sm font-medium py-1.5 px-2 rounded mt-1"
       >
         STOP
       </button>
