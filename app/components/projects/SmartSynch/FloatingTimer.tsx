@@ -1,5 +1,4 @@
-import React from 'react';
-import { createPortal } from 'react-dom';
+import React, { useState, useEffect } from 'react';
 
 interface FloatingTimerProps {
   seconds: number;
@@ -9,28 +8,53 @@ interface FloatingTimerProps {
 }
 
 export function FloatingTimer({ seconds, taskName, onStop, isRunning }: FloatingTimerProps) {
-  const formatTime = (secs: number) => {
-    const hours = Math.floor(secs / 3600);
-    const minutes = Math.floor((secs % 3600) / 60);
-    const remainingSeconds = secs % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
+  const [timerWindow, setTimerWindow] = useState<Window | null>(null);
 
-  if (!isRunning) return null;
+  useEffect(() => {
+    if (isRunning && !timerWindow) {
+      const width = 160;
+      const height = 100;
+      const left = window.screenX + window.outerWidth - width;
+      const top = window.screenY + window.outerHeight - height;
+      
+      const newWindow = window.open(
+        `${window.location.origin}/projects/SmartSynch/timer?name=${encodeURIComponent(taskName)}`,
+        '_blank',
+        `width=${width},height=${height},left=${left},top=${top}`
+      );
+      
+      if (newWindow) {
+        setTimerWindow(newWindow);
+      }
+    }
 
-  return createPortal(
-    <div className="fixed bottom-4 right-4 bg-white rounded-lg shadow-lg p-4 border border-gray-200 w-64 animate-in slide-in-from-right">
-      <div className="text-sm font-medium text-gray-500 truncate">{taskName}</div>
-      <div className="text-2xl font-bold text-gray-900 my-2">{formatTime(seconds)}</div>
-      <button
-        onClick={() => {
-          onStop();
-        }}
-        className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded"
-      >
-        STOP
-      </button>
-    </div>,
-    document.body
-  );
-} 
+    return () => {
+      timerWindow?.close();
+    };
+  }, [isRunning]);
+
+  useEffect(() => {
+    if (!timerWindow) return;
+    timerWindow.postMessage({ type: 'UPDATE_TIME', seconds, taskName }, '*');
+  }, [timerWindow, seconds, taskName]);
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data === 'stop') {
+        onStop();
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [onStop]);
+
+  return null;
+}
+
+const formatTime = (secs: number) => {
+  const hours = Math.floor(secs / 3600);
+  const minutes = Math.floor((secs % 3600) / 60);
+  const remainingSeconds = secs % 60;
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+}; 

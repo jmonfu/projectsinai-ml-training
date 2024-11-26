@@ -79,10 +79,12 @@ export function TimeTracker({ taskId, timeSpent, onTimeUpdate, onStart, isActive
           {formatTime(seconds)}
         </div>
         <Button
-          onClick={handleToggle}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2"
+          onClick={isActive ? handleStop : handleToggle}
+          variant="default"
+          size="sm"
+          className={`${isActive ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'}`}
         >
-          {isRunning ? 'Stop' : 'Start'}
+          {isActive ? 'Stop' : 'Start'}
         </Button>
       </div>
     </div>
