@@ -1,0 +1,29 @@
+# Model Configuration
+model:
+  dropout_rate: 0.2
+  embedding_model: "all-MiniLM-L6-v2"
+
+# Training Parameters
+training:
+  batch_size: 32
+  learning_rate: 0.001
+  epochs: 100
+  patience: 5  # Early stopping patience
+  validation_split: 0.2
+
+# Logging and Checkpoints
+logging:
+  log_interval: 10  # Log every N batches
+  save_best_only: true
+  metrics:
+    - accuracy
+    - precision
+    - recall
+    - f1
+
+# Early Stopping
+early_stopping:
+  monitor: "val_loss"
+  min_delta: 0.001
+  patience: 5
+  mode: "min" 
