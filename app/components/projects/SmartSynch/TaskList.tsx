@@ -1,11 +1,22 @@
 'use client';
 
-import { Task, TASK_CATEGORIES, TaskCategory } from './TaskForm';
+import { TASK_CATEGORIES, TaskCategory } from '../../../lib/categories';
 import { Button } from '../../../components/common/Button';
 import { Pencil, Trash2, Flag } from 'lucide-react';
 import { TimeTracker } from './TimeTracker';
 import { useEffect, useState } from 'react';
 import { FloatingTimer } from './FloatingTimer';
+
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  category: TaskCategory;
+  priority: 'high' | 'medium' | 'low';
+  createdAt: string;
+  timeSpent?: number;
+  timeRecords?: Array<{timestamp: string, seconds: number}>;
+}
 
 interface TaskListProps {
   tasks: Task[];

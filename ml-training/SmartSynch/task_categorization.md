@@ -56,8 +56,7 @@ smartsynch/
     {
       "title": "string",
       "description": "string",
-      "category": "string",
-      "confidence": number
+      "category": "string"
     }
   ]
 }
@@ -584,4 +583,126 @@ Reference implementation:
    - User accepts/rejects
    - Feedback stored
    - Added to retraining data
+
+### Training Guide - Training the Model
+
+#### Prerequisites
+1. Install dependencies:
+```bash
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+```
+
+#### Step 1: Data Preparation
+1. Ensure your training data is in the correct format:
+```json:SmartSynch/data/training_data.json
+{
+  "samples": [
+    {
+      "title": "string",
+      "description": "string",
+      "category": "string"
+    }
+  ]
+}
+```
+
+2. Run the data preparation script:
+change directory to (tf-env) jmontfort@fedora:~/MyProjects/projectin-ai/ml-training/SmartSynch$ and run
+
+```bash
+python -m scripts.prepare_data --input data/training_data.json --output data/processed --test-size 0.2
+
+```
+
+This will:
+- Process the training data
+- Generate embeddings
+- Split into train/val/test splits
+- Save processed files in data/processed/
+  - X_train.npy: Training embeddings
+  - X_val.npy: Validation embeddings
+  - y_train.npy: Training labels
+  - y_val.npy: Validation labels
+  - category_map.npy: Category mapping
+
+#### Step 2: Model Training
+1. Configure training parameters in `configs/training_config.yaml`:
+```yaml
+model:
+  dropout_rate: 0.2
+  embedding_model: "all-MiniLM-L6-v2"
+
+# Training Parameters
+training:
+  batch_size: 32
+  learning_rate: 0.001
+  epochs: 100
+  patience: 5  # Early stopping patience
+  validation_split: 0.2
+
+# Logging and Checkpoints
+logging:
+  log_interval: 10  # Log every N batches
+  save_best_only: true
+  metrics:
+    - accuracy
+    - precision
+    - recall
+    - f1
+
+# Early Stopping
+early_stopping:
+  monitor: "val_loss"
+  min_delta: 0.001
+  patience: 5
+  mode: "min" 
+  ```
+
+2. Start the training process:
+```bash
+python -m scripts.train_model --config configs/training_config.yaml --data-dir data/processed
+```
+
+The training script will:
+- Load preprocessed data
+- Initialize the TaskClassifier model
+- Train using the specified configuration
+- Save checkpoints to `models/fine_tuned/`
+
+#### Step 3: Model Evaluation
+1. Evaluate the trained model:
+```bash
+# Using separate feature and label files
+
+python -m scripts.evaluate_model \
+    --model-path models/fine_tuned/20241128_075710/model.pt \
+    --test-data data/processed/X_val.npy \
+    --labels data/processed/y_val.npy \
+    --output-dir evaluation_results
+```
+
+This will:
+- Load the trained model
+- Make predictions on test data
+- Generate evaluation metrics:
+  - Accuracy, Precision, Recall, F1
+  - Confusion matrix plot (saved as confusion_matrix.png)
+  - Confidence analysis
+- Save detailed results to evaluation_results.json
+- Display summary metrics in console output
+
+The evaluation script supports both .npy and .json test data formats and will automatically handle the appropriate data loading and processing.
+
+#### Monitoring Training Progress
+- Training metrics are logged to `logs/training.log`
+- Monitor metrics using TensorBoard:
+```bash
+tensorboard --logdir runs/
+```
+
+#### Troubleshooting
+- If you encounter CUDA out-of-memory errors, reduce batch_size in training_config.yaml
+- For poor performance, try adjusting learning_rate or increasing epochs
+- Check logs/training.log for detailed error messages
 

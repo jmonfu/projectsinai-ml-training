@@ -1,11 +1,19 @@
-from setuptools import setup, find_packages
+from setuptools import setup as setuptools_setup, find_packages
+import nltk
 
-setup(
+def download_nltk_data():
+    nltk.download('punkt')
+    nltk.download('punkt_tab')
+
+if __name__ == "__main__":
+    download_nltk_data()
+
+setuptools_setup(
     name="smartsynch",
     version="0.1.0",
     packages=find_packages(),
     install_requires=[
-        "tensorflow",
+        "tensorflow>=2.18.0",
         "torch",
         "transformers",
         "sentence-transformers",

@@ -1,0 +1,16 @@
+Metadata-Version: 2.1
+Name: smartsynch
+Version: 0.1.0
+Summary: A smart task categorization system using ML
+Author: Your Name
+Author-email: your.email@example.com
+Description-Content-Type: text/markdown
+Requires-Dist: tensorflow>=2.18.0
+Requires-Dist: torch
+Requires-Dist: transformers
+Requires-Dist: sentence-transformers
+Requires-Dist: numpy
+Requires-Dist: pandas
+Requires-Dist: scikit-learn
+Requires-Dist: nltk
+Requires-Dist: spacy

@@ -10,6 +10,7 @@ from typing import List, Dict, Optional
 import json
 from ...models.predictor import TaskPredictor
 from ..dependencies import get_predictor, get_redis_client
+import logging
 
 router = APIRouter()
 
@@ -17,10 +18,16 @@ class TaskInput(BaseModel):
     title: str
     description: str
 
+class PredictionResponse(BaseModel):
+    category: str | int
+    category_id: int
+    confidence: float
+    probabilities: Dict[str, float] = {}  # Changed from Optional to default empty dict
+
 class BatchTaskInput(BaseModel):
     tasks: List[TaskInput]
 
-@router.post("/predict", response_model=Dict)
+@router.post("/predict", response_model=PredictionResponse)
 async def predict_category(
     task: TaskInput,
     predictor: TaskPredictor = Depends(get_predictor),
@@ -37,7 +44,18 @@ async def predict_category(
 
     try:
         # Get prediction
+        logger = logging.getLogger(__name__)
+        logger.info(f"Making prediction for task: {task.title}")
         result = predictor.predict(task.title, task.description)
+        
+        # Convert category to lowercase to match frontend
+        result['category'] = result['category'].lower()
+        
+        # Ensure probabilities is included in the result
+        if 'probabilities' not in result:
+            result['probabilities'] = {}
+
+        logger.info(f"Prediction result: {result}")
         
         # Cache result
         redis_client.setex(
@@ -48,6 +66,7 @@ async def predict_category(
         
         return result
     except Exception as e:
+        logger.error(f"Prediction error: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail=f"Prediction error: {str(e)}"

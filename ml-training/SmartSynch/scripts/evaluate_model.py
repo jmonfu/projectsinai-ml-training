@@ -23,106 +23,98 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def load_test_data(test_file: str):
-    """Load test data from JSON file."""
-    with open(test_file, 'r') as f:
-        data = json.load(f)
-    return data['samples']
+def load_test_data(test_file: str, labels_file: str = None):
+    """Load test data from file."""
+    if test_file.endswith('.npy'):
+        if labels_file is None:
+            raise ValueError("Labels file required when using .npy format")
+        X = np.load(test_file, allow_pickle=True)
+        y = np.load(labels_file, allow_pickle=True)
+        return {'features': X, 'labels': y}
+    elif test_file.endswith('.json'):
+        with open(test_file) as f:
+            return json.load(f)
+    else:
+        raise ValueError(f"Unsupported file format: {test_file}")
 
-def evaluate_model(model_version: str, test_data: list, output_dir: Path):
-    """
-    Evaluate model performance on test data.
+def evaluate_model(model_path: str, test_data: dict, output_dir: Path):
+    """Evaluate model performance on test data."""
+    logger.info("Loading model...")
+    predictor = TaskPredictor(model_path)
     
-    Args:
-        model_version: Model version to evaluate
-        test_data: List of test samples
-        output_dir: Directory to save evaluation results
-    """
-    # Initialize predictor and evaluator
-    predictor = TaskPredictor(model_version)
-    evaluator = ModelEvaluator(predictor.model_manager.category_map)
-    
-    # Prepare test data
-    titles = [sample['title'] for sample in test_data]
-    descriptions = [sample['description'] for sample in test_data]
-    true_categories = [sample['category'] for sample in test_data]
+    # Extract features and labels from test data
+    features = test_data['features']
+    true_categories = test_data['labels']
     
     # Get predictions
+    logger.info("Making predictions...")
     predictions = []
     confidences = []
     
-    logger.info("Making predictions on test data...")
-    for title, desc in zip(titles, descriptions):
-        result = predictor.predict(title, desc)
-        predictions.append(result['category'])
-        confidences.append(result['confidence'])
+    # Debug the feature format
+    logger.info(f"Feature shape/type: {features.shape if hasattr(features, 'shape') else type(features)}")
     
-    # Convert categories to indices
-    category_map = predictor.model_manager.category_map
-    y_true = [category_map[cat] for cat in true_categories]
-    y_pred = [category_map[cat] for cat in predictions]
+    # Convert numpy array to tensor and pass directly to model
+    try:
+        import torch
+        features_tensor = torch.from_numpy(features).float()  # Ensure float tensor
+        logits = predictor.model.forward(features_tensor)
+        predictions_tensor = torch.argmax(logits, dim=1)
+        confidences_tensor = torch.max(torch.softmax(logits, dim=1), dim=1)[0]
+        
+        predictions = predictions_tensor.tolist()
+        confidences = confidences_tensor.tolist()
+    except Exception as e:
+        logger.error(f"Error during prediction: {str(e)}")
+        raise
     
-    # Compute all metrics
-    logger.info("Computing evaluation metrics...")
-    eval_results = evaluator.evaluate_model(y_true, y_pred, confidences)
+    # Load category mapping from metadata
+    metadata_path = Path(model_path).parent / 'metadata.json'
+    if metadata_path.exists():
+        with open(metadata_path) as f:
+            metadata = json.load(f)
+            category_map = metadata['category_map']
+    else:
+        # Fallback to default category map from test data
+        category_map = {
+            "Design": 0,
+            "Development": 1,
+            "Meeting": 2,
+            "Planning": 3,
+            "Research": 4
+        }
     
-    # Save confusion matrix plot
-    logger.info("Generating confusion matrix plot...")
-    evaluator.plot_confusion_matrix(
-        y_true, y_pred,
-        output_path=output_dir / 'confusion_matrix.png'
-    )
-    
-    # Save detailed results
-    logger.info("Saving evaluation results...")
-    with open(output_dir / 'evaluation_results.json', 'w') as f:
-        json.dump(eval_results, f, indent=2)
-    
-    # Log summary metrics
-    logger.info("\nEvaluation Summary:")
-    logger.info(f"Accuracy: {eval_results['basic_metrics']['accuracy']:.4f}")
-    logger.info(f"F1 Score: {eval_results['basic_metrics']['f1']:.4f}")
-    logger.info(f"Mean Confidence: {eval_results['confidence_metrics']['mean_confidence']:.4f}")
+    evaluator = ModelEvaluator(category_map)
 
 def main():
-    """Main evaluation pipeline."""
-    parser = argparse.ArgumentParser(description='Evaluate model performance')
-    parser.add_argument(
-        '--model-version',
-        type=str,
-        default='latest',
-        help='Model version to evaluate'
-    )
-    parser.add_argument(
-        '--test-data',
-        type=str,
-        default='data/test_data.json',
-        help='Path to test data file'
-    )
-    parser.add_argument(
-        '--output-dir',
-        type=str,
-        default='evaluation_results',
-        help='Directory to save evaluation results'
-    )
+    # Define parser
+    parser = argparse.ArgumentParser(description='Evaluate model performance on test data')
+    parser.add_argument('--model-path', required=True, help='Path to trained model')
+    parser.add_argument('--test-data', required=True, help='Path to test data file')
+    parser.add_argument('--labels', help='Path to labels file (required for .npy format)')
+    parser.add_argument('--output-dir', required=True, help='Directory to save evaluation results')
+    
     args = parser.parse_args()
     
-    # Create output directory
-    output_dir = Path(args.output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    # Convert paths to absolute paths from project root
+    project_root = Path(__file__).parent.parent  # This is the SmartSynch directory
+    model_path = project_root / args.model_path
+    test_data_path = project_root / args.test_data
+    labels_path = project_root / args.labels if args.labels else None
+    output_dir = project_root / args.output_dir
     
-    try:
-        # Load test data
-        logger.info(f"Loading test data from {args.test_data}")
-        test_data = load_test_data(args.test_data)
+    # Ensure directories exist
+    if not test_data_path.exists():
+        logger.error(f"Test data not found at: {test_data_path}")
+        logger.info(f"Current directory structure:")
+        logger.info("\n".join(str(p) for p in project_root.glob("**/*") if p.is_file()))
+        raise FileNotFoundError(f"Test data not found at: {test_data_path}")
         
-        # Run evaluation
-        evaluate_model(args.model_version, test_data, output_dir)
-        logger.info(f"Evaluation results saved to {output_dir}")
-        
-    except Exception as e:
-        logger.error(f"Error during evaluation: {str(e)}")
-        raise
+    output_dir.mkdir(exist_ok=True, parents=True)
+    
+    # Load test data before passing to evaluate_model
+    test_data = load_test_data(str(test_data_path), str(labels_path) if labels_path else None)
+    evaluate_model(str(model_path), test_data, output_dir)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

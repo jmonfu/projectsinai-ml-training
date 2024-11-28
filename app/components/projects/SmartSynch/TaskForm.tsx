@@ -9,22 +9,16 @@ import {
   SelectItem,
   SelectTrigger,
 } from "../../../components/common/Select"
+import { predictTaskCategory } from '../../../projects/SmartSynch/api/taskPredictor';
+import { debounce } from 'lodash';
+import { submitTaskFeedback } from '../../../projects/SmartSynch/api/taskFeedback';
+import { TASK_CATEGORIES, TaskCategory } from '../../../lib/categories';
 
 interface TaskFormProps {
   onSubmit: (task: Task) => void;
   initialTask?: Task;
   isEditing?: boolean;
 }
-
-export const TASK_CATEGORIES = {
-  'development': { name: 'Development', color: 'bg-blue-100 text-blue-800' },
-  'design': { name: 'Design', color: 'bg-purple-100 text-purple-800' },
-  'research': { name: 'Research', color: 'bg-green-100 text-green-800' },
-  'meeting': { name: 'Meeting', color: 'bg-yellow-100 text-yellow-800' },
-  'planning': { name: 'Planning', color: 'bg-indigo-100 text-indigo-800' },
-} as const;
-
-export type TaskCategory = keyof typeof TASK_CATEGORIES;
 
 export interface Task {
   id: string;
@@ -40,6 +34,11 @@ export interface Task {
   }[];
 }
 
+function getCategoryFromId(id: number): TaskCategory {
+  const categories = Object.keys(TASK_CATEGORIES) as TaskCategory[];
+  return categories[id] || 'other'; // fallback to 'other' if invalid id
+}
+
 export default function TaskForm({ onSubmit, initialTask, isEditing = false }: TaskFormProps) {
   const [task, setTask] = useState<Task>({
     id: crypto.randomUUID(),
@@ -52,14 +51,57 @@ export default function TaskForm({ onSubmit, initialTask, isEditing = false }: T
     timeRecords: []
   });
 
+  const [prediction, setPrediction] = useState<{
+    category: TaskCategory | null;
+    confidence: number;
+  }>({ category: null, confidence: 0 });
+
   useEffect(() => {
     if (initialTask) {
       setTask(initialTask);
     }
   }, [initialTask]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const getPrediction = debounce(async () => {
+      if (task.title.length > 3 && task.description.length > 10) {
+        try {
+          // Predict the task category
+          const result = await predictTaskCategory(task.title, task.description);
+          if (result.confidence > 0.7) {
+            const categoryId = typeof result.category === 'number' ? result.category : parseInt(result.category, 10);
+            setPrediction({
+              category: getCategoryFromId(categoryId),
+              confidence: result.confidence
+            });
+            setTask(prev => ({ ...prev, category: getCategoryFromId(categoryId) }));
+          }
+        } catch (error: any) {
+          console.error('Prediction failed:', error);
+          console.error('Error details:', error.message);
+          console.error('Full error object:', error);
+        }
+      }
+    }, 500);
+
+    getPrediction();
+    return () => getPrediction.cancel();
+  }, [task.title, task.description]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Submit feedback if we had a prediction
+    if (prediction.category) {
+      await submitTaskFeedback(
+        task.title,
+        task.description,
+        prediction.category,
+        task.category,
+        prediction.category === task.category
+      );
+    }
+    
     onSubmit(task);
     if (!isEditing) {
       resetForm();
@@ -154,9 +196,16 @@ export default function TaskForm({ onSubmit, initialTask, isEditing = false }: T
               }
             >
               <SelectTrigger className="w-full bg-white text-gray-900">
-                <div className="flex items-center gap-2">
-                  <Folder className="h-4 w-4" />
-                  <span className="text-gray-900">{TASK_CATEGORIES[task.category]?.name}</span>
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-2">
+                    <Folder className="h-4 w-4" />
+                    <span className="text-gray-900">{TASK_CATEGORIES[task.category]?.name}</span>
+                  </div>
+                  {prediction.confidence > 0.7 && (
+                    <span className="text-xs text-green-600">
+                      {Math.round(prediction.confidence * 100)}% match
+                    </span>
+                  )}
                 </div>
               </SelectTrigger>
               <SelectContent>

@@ -1,0 +1,17 @@
+{
+  "version": "20241128_073303",
+  "category_map": {
+    "Design": 0,
+    "Development": 1,
+    "Meeting": 2,
+    "Planning": 3,
+    "Research": 4
+  },
+  "metrics": {
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "loss": 1.0451889038085938
+  }
+}

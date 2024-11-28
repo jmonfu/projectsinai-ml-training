@@ -7,6 +7,9 @@ Provides a high-level interface for making task category predictions.
 from typing import List, Dict, Tuple
 from .manager import ModelManager
 from ..data.processor import DataProcessor
+import torch
+import torch.nn.functional as F
+import logging
 
 class TaskPredictor:
     def __init__(self, model_version: str = "latest"):
@@ -23,50 +26,49 @@ class TaskPredictor:
             idx: cat for cat, idx in self.model_manager.category_map.items()
         }
 
-    def predict(self, title: str, description: str) -> Dict[str, any]:
-        """
-        Predict category for a given task.
-        
-        Args:
-            title: Task title
-            description: Task description
+    def predict(self, title: str, description: str) -> dict:
+        try:
+            # Combine title and description
+            input_text = self.processor.combine_title_description(title, description)
+            print(f"Combined text: {input_text}")  # Debugging statement
             
-        Returns:
-            Dictionary containing prediction details:
-            {
-                "category": str,
-                "confidence": float,
-                "alternatives": List[Tuple[str, float]]
+            input_tensor = self.processor.text_to_tensor(input_text)
+            print(f"Input tensor shape: {input_tensor.shape}")  # Debugging statement
+            
+            # Get model predictions
+            with torch.no_grad():
+                # Get raw logits
+                logits = self.model.forward(input_tensor)
+                print(f"Logits: {logits}")  # Debugging statement
+                
+                # Convert to probabilities
+                probabilities = F.softmax(logits, dim=1)
+                print(f"Probabilities: {probabilities}")  # Debugging statement
+                
+                # Get predicted class and confidence
+                confidence, predicted_class = torch.max(probabilities, dim=1)
+                
+                # Convert to Python types
+                predicted_class = int(predicted_class.item())
+                confidence = float(confidence.item())
+                
+                # Get category name
+                category = self.model_manager.category_map.get(str(predicted_class), "Unknown")
+                print(f"Predicted class: {predicted_class}, Category: {category}, Confidence: {confidence}")  # Debugging statement
+            
+            return {
+                "category": category,
+                "category_id": predicted_class,
+                "confidence": confidence,
+                "probabilities": {
+                    self.model_manager.category_map.get(str(i)): float(prob)
+                    for i, prob in enumerate(probabilities[0])
+                }
             }
-        """
-        # Combine and clean text
-        combined_text = self.processor.combine_title_description(title, description)
-        cleaned_text = self.processor.clean_text(combined_text)
-        
-        # Get model predictions
-        logits = self.model([cleaned_text])
-        pred_idx, confidence = self.model.predict([cleaned_text])
-        
-        # Get predicted category
-        category = self.category_map_reverse[pred_idx[0]]
-        
-        # Get alternative predictions (if confidence is low)
-        alternatives = []
-        if confidence[0] < 0.8:  # Configurable threshold
-            # Get top 3 predictions from logits
-            top_k = min(3, len(self.category_map_reverse))
-            top_indices = logits[0].topk(top_k)
-            alternatives = [
-                (self.category_map_reverse[idx], float(prob))
-                for idx, prob in zip(top_indices.indices, top_indices.values)
-                if idx != pred_idx[0]
-            ]
-
-        return {
-            "category": category,
-            "confidence": float(confidence[0]),
-            "alternatives": alternatives
-        }
+            
+        except Exception as e:
+            print(f"Error in prediction: {str(e)}")  # Debugging statement
+            raise ValueError(f"Prediction error: {str(e)}")
 
     def batch_predict(self, tasks: List[Dict[str, str]]) -> List[Dict[str, any]]:
         """

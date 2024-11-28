@@ -9,6 +9,7 @@ from pathlib import Path
 import json
 from typing import Dict, Optional
 from .classifier import TaskClassifier
+import logging
 
 class ModelManager:
     def __init__(self, model_dir: str = "models/fine_tuned"):
@@ -22,6 +23,8 @@ class ModelManager:
         self.model_dir.mkdir(parents=True, exist_ok=True)
         self.current_model: Optional[TaskClassifier] = None
         self.category_map: Dict[str, int] = {}
+        self.logger = logging.getLogger(__name__)
+        logging.basicConfig(level=logging.ERROR)
 
     def save_model(self, model: TaskClassifier, version: str, 
                   category_map: Dict[str, int], metrics: Dict):
@@ -50,34 +53,55 @@ class ModelManager:
         with open(version_dir / "metadata.json", "w") as f:
             json.dump(metadata, f, indent=2)
 
-    def load_model(self, version: str = "latest") -> TaskClassifier:
-        """
-        Load model and metadata.
-        
-        Args:
-            version: Model version to load
+    def load_model(self, version="latest"):
+        """Load model from disk. Falls back to base model if no fine-tuned model exists."""
+        try:
+            # Try loading fine-tuned model first
+            model_path = os.path.join(self.model_dir, "fine_tuned", version)
+            if os.path.exists(model_path):
+                return self.load_fine_tuned_model(model_path)
             
-        Returns:
-            Loaded model instance
-        """
-        if version == "latest":
-            # Get latest version
-            versions = [d for d in self.model_dir.iterdir() if d.is_dir()]
-            if not versions:
-                raise ValueError("No models found")
-            version_dir = max(versions, key=lambda x: x.stat().st_mtime)
-        else:
-            version_dir = self.model_dir / version
+            # If no fine-tuned model exists, return base model
+            self.logger.info("No fine-tuned model found. Using base model.")
+            return self.load_base_model()
+            
+        except Exception as e:
+            self.logger.error(f"Error loading model: {str(e)}")
+            # Always fall back to base model on error
+            self.logger.info("Falling back to base model.")
+            return self.load_base_model()
 
+    def load_fine_tuned_model(self, model_path: str):
+        """Load a fine-tuned model from the given path."""
+        if not os.path.exists(os.path.join(model_path, "model.pt")):
+            raise FileNotFoundError(f"No model found at {model_path}")
+            
         # Load metadata
-        with open(version_dir / "metadata.json", "r") as f:
+        with open(os.path.join(model_path, "metadata.json"), "r") as f:
             metadata = json.load(f)
-        
-        # Initialize and load model
+            
+        # Create and load model
+        self.current_model = TaskClassifier()
+        self.current_model.load(os.path.join(model_path, "model.pt"))
         self.category_map = metadata["category_map"]
-        num_classes = len(self.category_map)
-        model = TaskClassifier(num_classes)
-        model.load(str(version_dir / "model.pt"))
+        return self.current_model
+
+    def load_base_model(self):
+        """Load the base model."""
+        num_classes = 10  # Adjust based on your actual number of categories
+        self.current_model = TaskClassifier(num_classes=num_classes)
         
-        self.current_model = model
-        return model
+        # Define meaningful category mappings
+        self.category_map = {
+            "0": "Bug Fix",
+            "1": "Feature Request",
+            "2": "Documentation",
+            "3": "Enhancement",
+            "4": "Security",
+            "5": "Performance",
+            "6": "Testing",
+            "7": "UI/UX",
+            "8": "DevOps",
+            "9": "Other"
+        }
+        return self.current_model

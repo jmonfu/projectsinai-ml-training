@@ -11,16 +11,17 @@ This module handles all data preprocessing steps for the task categorization mod
 import json
 import nltk
 import spacy
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sentence_transformers import SentenceTransformer
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
+import torch
 
 class DataProcessor:
-    def __init__(self):
+    def __init__(self, max_length: int = 512):
         """Initialize the data processor with required models and tools."""
         # Download required NLTK data
         nltk.download('punkt')
@@ -34,6 +35,7 @@ class DataProcessor:
         
         # Initialize sentence transformer
         self.encoder = SentenceTransformer('all-MiniLM-L6-v2')
+        self.max_length = max_length
 
     def clean_text(self, text: str) -> str:
         """
@@ -129,3 +131,23 @@ class DataProcessor:
         """
         return train_test_split(X, y, test_size=test_size, 
                               random_state=random_state, stratify=y)
+
+    def text_to_tensor(self, text: Union[str, List[str]]) -> torch.Tensor:
+        """Convert text to tensor format."""
+        if isinstance(text, str):
+            # Tokenize the text
+            tokens = word_tokenize(text.lower())
+            
+            # Create a fixed-size tensor filled with zeros
+            tensor = torch.zeros(self.max_length, dtype=torch.long)
+            
+            # Fill tensor with token lengths (or whatever encoding you're using)
+            for i, token in enumerate(tokens[:self.max_length]):
+                tensor[i] = len(token)
+            
+            # Add batch dimension
+            return tensor.unsqueeze(0)  # Shape becomes [1, max_length]
+        else:
+            # Handle list of texts
+            tensors = [self.text_to_tensor(t) for t in text]
+            return torch.cat(tensors, dim=0)  # Stack along batch dimension
