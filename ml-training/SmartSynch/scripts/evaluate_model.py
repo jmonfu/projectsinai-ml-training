@@ -13,7 +13,7 @@ import logging
 import json
 from pathlib import Path
 import numpy as np
-from smartsynch.models.predictor import TaskPredictor
+from smartsynch.models.predictor import Predictor
 from smartsynch.utils.evaluation import ModelEvaluator
 
 # Set up logging
@@ -40,7 +40,7 @@ def load_test_data(test_file: str, labels_file: str = None):
 def evaluate_model(model_path: str, test_data: dict, output_dir: Path):
     """Evaluate model performance on test data."""
     logger.info("Loading model...")
-    predictor = TaskPredictor(model_path)
+    predictor = Predictor(model_path)
     
     # Extract features and labels from test data
     features = test_data['features']
