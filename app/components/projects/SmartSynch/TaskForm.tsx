@@ -35,8 +35,17 @@ export interface Task {
 }
 
 function getCategoryFromId(id: number): TaskCategory {
-  const categories = Object.keys(TASK_CATEGORIES) as TaskCategory[];
-  return categories[id] || 'other'; // fallback to 'other' if invalid id
+  // Create a mapping of IDs to categories
+  const categoryMap: Record<number, TaskCategory> = {
+    0: 'design',
+    1: 'development',
+    2: 'meeting',
+    3: 'planning',
+    4: 'research',
+    5: 'other'
+  };
+  
+  return categoryMap[id] || 'other';
 }
 
 export default function TaskForm({ onSubmit, initialTask, isEditing = false }: TaskFormProps) {
@@ -56,37 +65,53 @@ export default function TaskForm({ onSubmit, initialTask, isEditing = false }: T
     confidence: number;
   }>({ category: null, confidence: 0 });
 
+  const [predictionStatus, setPredictionStatus] = useState<string>('');
+
   useEffect(() => {
     if (initialTask) {
       setTask(initialTask);
     }
   }, [initialTask]);
 
-  useEffect(() => {
-    const getPrediction = debounce(async () => {
-      if (task.title.length > 3 && task.description.length > 10) {
-        try {
-          // Predict the task category
-          const result = await predictTaskCategory(task.title, task.description);
-          if (result.confidence > 0.7) {
-            const categoryId = typeof result.category === 'number' ? result.category : parseInt(result.category, 10);
-            setPrediction({
-              category: getCategoryFromId(categoryId),
-              confidence: result.confidence
-            });
-            setTask(prev => ({ ...prev, category: getCategoryFromId(categoryId) }));
-          }
-        } catch (error: any) {
-          console.error('Prediction failed:', error);
-          console.error('Error details:', error.message);
-          console.error('Full error object:', error);
+  const debouncedPredict = debounce(async (title: string, description: string = '') => {
+    console.log('Attempting prediction with:', { title, description });
+    if (title.length > 3) {
+      try {
+        const result = await predictTaskCategory(title, description);
+        console.log('Prediction result:', result);
+        
+        if (result.confidence > 0.7) {
+          const predictedCategory = getCategoryFromId(result.category_id);
+          console.log('Setting predicted category:', predictedCategory);
+          
+          setPrediction({
+            category: predictedCategory,
+            confidence: result.confidence
+          });
+          setTask(prev => ({ ...prev, category: predictedCategory }));
+          setPredictionStatus('Category automatically selected');
+          
+          setTimeout(() => setPredictionStatus(''), 3000);
         }
+      } catch (error: any) {
+        console.error('Prediction failed:', error);
       }
-    }, 500);
+    }
+  }, 500);
 
-    getPrediction();
-    return () => getPrediction.cancel();
-  }, [task.title, task.description]);
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTitle = e.target.value;
+    setTask(prev => ({ ...prev, title: newTitle }));
+    debouncedPredict(newTitle, task.description);
+  };
+
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newDescription = e.target.value;
+    setTask(prev => ({ ...prev, description: newDescription }));
+    if (task.title.length > 3) {
+      debouncedPredict(task.title, newDescription);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,6 +146,56 @@ export default function TaskForm({ onSubmit, initialTask, isEditing = false }: T
     });
   };
 
+  // Handle title blur
+  const handleTitleBlur = async () => {
+    if (task.title.length > 3) {
+      try {
+        const result = await predictTaskCategory(task.title, task.description);
+        console.log('Prediction result on title blur:', result);
+        
+        if (result.confidence > 0.7) {
+          const predictedCategory = getCategoryFromId(result.category_id);
+          
+          setPrediction({
+            category: predictedCategory,
+            confidence: result.confidence
+          });
+          setTask(prev => ({ ...prev, category: predictedCategory }));
+          setPredictionStatus('Category automatically selected');
+          
+          setTimeout(() => setPredictionStatus(''), 3000);
+        }
+      } catch (error) {
+        console.error('Prediction failed on title blur:', error);
+      }
+    }
+  };
+
+  // Handle description blur
+  const handleDescriptionBlur = async () => {
+    if (task.title.length > 3) {
+      try {
+        const result = await predictTaskCategory(task.title, task.description);
+        console.log('Prediction result on description blur:', result);
+        
+        if (result.confidence > 0.7) {
+          const predictedCategory = getCategoryFromId(result.category_id);
+          
+          setPrediction({
+            category: predictedCategory,
+            confidence: result.confidence
+          });
+          setTask(prev => ({ ...prev, category: predictedCategory }));
+          setPredictionStatus('Category automatically selected');
+          
+          setTimeout(() => setPredictionStatus(''), 3000);
+        }
+      } catch (error) {
+        console.error('Prediction failed on description blur:', error);
+      }
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
@@ -135,7 +210,8 @@ export default function TaskForm({ onSubmit, initialTask, isEditing = false }: T
             <Input
               type="text"
               value={task.title}
-              onChange={(e) => setTask({ ...task, title: e.target.value })}
+              onChange={handleTitleChange}
+              onBlur={handleTitleBlur}
               className="pl-10 pr-10 w-full bg-white text-gray-900"
               placeholder="Enter task title"
               required
@@ -149,7 +225,8 @@ export default function TaskForm({ onSubmit, initialTask, isEditing = false }: T
           </label>
           <Textarea
             value={task.description}
-            onChange={(e) => setTask({ ...task, description: e.target.value })}
+            onChange={handleDescriptionChange}
+            onBlur={handleDescriptionBlur}
             className="w-full bg-white text-gray-900"
             placeholder="Enter task description"
             required
@@ -191,9 +268,10 @@ export default function TaskForm({ onSubmit, initialTask, isEditing = false }: T
             </label>
             <Select
               value={task.category}
-              onValueChange={(value: TaskCategory) => 
-                setTask({ ...task, category: value })
-              }
+              onValueChange={(value: TaskCategory) => {
+                setTask({ ...task, category: value });
+                setPredictionStatus('');  // Clear prediction status on manual change
+              }}
             >
               <SelectTrigger className="w-full bg-white text-gray-900">
                 <div className="flex items-center justify-between w-full">
@@ -216,6 +294,9 @@ export default function TaskForm({ onSubmit, initialTask, isEditing = false }: T
                 ))}
               </SelectContent>
             </Select>
+            {predictionStatus && (
+              <p className="text-xs text-gray-500 mt-1">{predictionStatus}</p>
+            )}
           </div>
         </div>
       </div>
