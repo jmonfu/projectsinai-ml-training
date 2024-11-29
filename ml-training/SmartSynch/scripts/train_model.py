@@ -124,59 +124,22 @@ def main():
         config['training']['batch_size']
     )
     
-    # Initialize model
-    model = TaskClassifier(
-        num_classes=len(category_map),
-        dropout_rate=config['model']['dropout_rate']
-    ).to(device)
+    # Get unique categories from your data
+    unique_categories = np.unique(y_train)
+    config['model']['num_classes'] = len(unique_categories)
+    
+    # Create the model
+    model = TaskClassifier(config['model']).to(device)
     
     # Training setup
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(
         model.parameters(),
-        lr=config['training']['learning_rate']
+        lr=config['model']['learning_rate']
     )
     
-    # Training loop
-    best_val_loss = float('inf')
-    patience = config['training']['patience']
-    patience_counter = 0
-    
-    for epoch in range(config['training']['epochs']):
-        # Train
-        train_loss = train_epoch(model, train_loader, criterion, optimizer, device)
-        
-        # Evaluate
-        val_metrics = evaluate(model, val_loader, criterion, device)
-        
-        # Log metrics
-        logger.info(
-            f"Epoch {epoch+1}/{config['training']['epochs']} - "
-            f"Train Loss: {train_loss:.4f} - "
-            f"Val Loss: {val_metrics['loss']:.4f} - "
-            f"Val Accuracy: {val_metrics['accuracy']:.4f}"
-        )
-        
-        # Early stopping
-        if val_metrics['loss'] < best_val_loss:
-            best_val_loss = val_metrics['loss']
-            patience_counter = 0
-            
-            # Save best model
-            model_manager = ModelManager()
-            version = datetime.now().strftime("%Y%m%d_%H%M%S")
-            model_manager.save_model(
-                model=model,
-                version=version,
-                category_map=category_map,
-                metrics=val_metrics
-            )
-            logger.info(f"Saved best model version: {version}")
-        else:
-            patience_counter += 1
-            if patience_counter >= patience:
-                logger.info("Early stopping triggered")
-                break
+    # Train the model
+    model.train_model(train_loader, val_loader, criterion, optimizer, device)
 
 if __name__ == "__main__":
     main()

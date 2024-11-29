@@ -63,35 +63,63 @@ class ModelManager:
         with open(version_dir / "metadata.json", "w") as f:
             json.dump(metadata, f, indent=2)
 
-    def load_model(self, model_version):
-        """Load model from disk. Falls back to base model if no fine-tuned model exists."""
+    def load_model(self, model_version=None):
+        """Load the model"""
         try:
-            # Try loading weights if they exist
-            model_path = self._get_model_path(model_version)
+            logging.info(f"Loading model version: {model_version}")
             
-            # Load metadata if available
-            version_dir = self.model_dir / model_version
-            if os.path.exists(version_dir / "metadata.json"):
-                with open(version_dir / "metadata.json", "r") as f:
-                    metadata = json.load(f)
-                    self.category_map = metadata["category_map"]
-                    self.logger.info(f"Loaded category map from metadata: {self.category_map}")
+            # Create model config
+            model_config = {
+                'num_classes': len(self.category_map),
+                'embedding_dim': 384,
+                'dropout_rate': 0.2,
+                'model_dir': 'models/fine_tuned'
+            }
             
-            # Create new model instance with correct number of classes
-            model = TaskClassifier(num_classes=len(self.category_map))
+            # Initialize model
+            model = TaskClassifier(config=model_config)
             
-            if os.path.exists(model_path):
-                model.load_state_dict(torch.load(model_path, map_location='cpu'))
-                self.logger.info(f"Loaded model weights from {model_path}")
+            # Try to load the trained model
+            if model_version and os.path.exists(model_version):
+                logging.info(f"Loading fine-tuned model from {model_version}")
+                model.load_state_dict(torch.load(model_version))
+                model.eval()  # Set to evaluation mode
+                return model
             else:
-                self.logger.info("No model weights found, using initialized model")
-            
-            model.eval()
-            return model
+                # List available models
+                model_dir = Path('models/fine_tuned')
+                if model_dir.exists():
+                    models = list(model_dir.glob('*/model.pt'))
+                    if models:
+                        latest_model = max(models, key=lambda p: p.parent.name)
+                        logging.info(f"Loading latest model: {latest_model}")
+                        model.load_state_dict(torch.load(latest_model))
+                        model.eval()  # Set to evaluation mode
+                        return model
                 
+                logging.warning("No fine-tuned model found. Training new model...")
+                return self._train_new_model(model_config)
+            
         except Exception as e:
-            self.logger.error(f"Error loading model: {str(e)}")
-            return self.load_base_model()
+            logging.error(f"Error loading model: {str(e)}")
+            raise
+
+    def _train_new_model(self, model_config):
+        """Train a new model if no fine-tuned model is found"""
+        from scripts.train_model import main as train_model
+        
+        logging.info("Training new model...")
+        train_model()  # This will train and save a new model
+        
+        # Try to load the newly trained model
+        model_dir = Path('models/fine_tuned')
+        latest_model = max(model_dir.glob('*/model.pt'), key=lambda p: p.parent.name)
+        
+        model = TaskClassifier(config=model_config)
+        model.load_state_dict(torch.load(latest_model))
+        model.eval()
+        
+        return model
 
     def _get_model_path(self, version: str) -> str:
         """Get the path to the model file for the given version."""
@@ -126,17 +154,20 @@ class ModelManager:
         return self.current_model
 
     def load_base_model(self):
-        """Load the base model."""
-        # Use the same category map as fine-tuned models
-        self.category_map = {
-            "Design": 0,
-            "Development": 1,
-            "Meeting": 2,
-            "Planning": 3,
-            "Research": 4
-        }
-        
-        # Create model with correct number of classes
-        model = TaskClassifier(num_classes=len(self.category_map))
-        model.eval()  # Set to evaluation mode
-        return model
+        """Load the base model"""
+        try:
+            # Create model config
+            model_config = {
+                'num_classes': len(self.category_map),
+                'embedding_dim': 384,
+                'dropout_rate': 0.2,
+                'model_dir': 'models/fine_tuned'
+            }
+            
+            # Initialize model with config
+            model = TaskClassifier(config=model_config)  # Changed this line
+            return model
+            
+        except Exception as e:
+            logging.error(f"Error loading base model: {str(e)}")
+            raise
