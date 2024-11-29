@@ -48,18 +48,22 @@ class Predictor:
     def predict(self, title: str, description: str) -> dict:
         """Make a prediction for a single task."""
         try:
-            # Preprocess input
-            title = title.strip().lower()
-            description = description.strip().lower()
+            # Add more weight to the title (it's often more indicative of category)
+            combined_text = f"{title} {title} {description}"  # Repeat title for emphasis
             
-            # Process text
-            combined_text = self.processor.combine_title_description(title, description)
-            cleaned_text = self.processor.clean_text(combined_text)
+            # Add logging to see raw predictions
+            logger.debug(f"Input - Title: {title}")
+            logger.debug(f"Input - Description: {description}")
+            logger.debug(f"Combined text: {combined_text}")
             
-            # Get model predictions
             with torch.no_grad():
-                logits = self.model([cleaned_text])
+                logits = self.model([combined_text])
                 probabilities = F.softmax(logits, dim=1)
+                
+                # Log raw probabilities for each category
+                for idx, prob in enumerate(probabilities[0]):
+                    logger.debug(f"Category {self.category_map_reverse[idx]}: {prob:.4f}")
+                
                 confidence, predicted_class = torch.max(probabilities, dim=1)
                 
                 # Convert to Python types
