@@ -8,7 +8,8 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import List, Dict, Optional
 import json
-from ...models.predictor import TaskPredictor
+import time
+from ...models.predictor import Predictor
 from ..dependencies import get_predictor, get_redis_client
 import logging
 
@@ -30,14 +31,15 @@ class BatchTaskInput(BaseModel):
 @router.post("/predict", response_model=PredictionResponse)
 async def predict_category(
     task: TaskInput,
-    predictor: TaskPredictor = Depends(get_predictor),
+    predictor: Predictor = Depends(get_predictor),
     redis_client = Depends(get_redis_client)
 ):
     """
     Predict category for a single task.
     """
     # Check cache
-    cache_key = f"pred:{task.title}:{task.description}"
+    #TODO remove the time  after testing
+    cache_key = f"pred:{task.title}:{task.description}:{time.time()}"
     cached_result = redis_client.get(cache_key)
     if cached_result:
         return json.loads(cached_result)
@@ -46,6 +48,8 @@ async def predict_category(
         # Get prediction
         logger = logging.getLogger(__name__)
         logger.info(f"Making prediction for task: {task.title}")
+        
+        # Use original inputs directly
         result = predictor.predict(task.title, task.description)
         
         # Convert category to lowercase to match frontend
@@ -64,6 +68,10 @@ async def predict_category(
             json.dumps(result)
         )
         
+        if result['confidence'] < 0.4:  # Adjust threshold as needed
+            logger.warning(f"Low confidence prediction: {result['confidence']}")
+            # Maybe use a fallback strategy or return uncertainty flag
+        
         return result
     except Exception as e:
         logger.error(f"Prediction error: {str(e)}")
@@ -75,7 +83,7 @@ async def predict_category(
 @router.post("/predict/batch", response_model=List[Dict])
 async def predict_categories_batch(
     batch: BatchTaskInput,
-    predictor: TaskPredictor = Depends(get_predictor)
+    predictor: Predictor = Depends(get_predictor)
 ):
     """
     Predict categories for multiple tasks.

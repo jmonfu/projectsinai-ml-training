@@ -10,6 +10,7 @@ import json
 from typing import Dict, Optional
 from .classifier import TaskClassifier
 import logging
+import torch
 
 class ModelManager:
     def __init__(self, model_dir: str = "models/fine_tuned"):
@@ -22,9 +23,18 @@ class ModelManager:
         self.model_dir = Path(model_dir)
         self.model_dir.mkdir(parents=True, exist_ok=True)
         self.current_model: Optional[TaskClassifier] = None
-        self.category_map: Dict[str, int] = {}
+        
+        # Initialize default category map
+        self.category_map = {
+            "Design": 0,
+            "Development": 1,
+            "Meeting": 2,
+            "Planning": 3,
+            "Research": 4
+        }
+        
         self.logger = logging.getLogger(__name__)
-        logging.basicConfig(level=logging.ERROR)
+        logging.basicConfig(level=logging.INFO)  # Changed to INFO for better debugging
 
     def save_model(self, model: TaskClassifier, version: str, 
                   category_map: Dict[str, int], metrics: Dict):
@@ -53,23 +63,52 @@ class ModelManager:
         with open(version_dir / "metadata.json", "w") as f:
             json.dump(metadata, f, indent=2)
 
-    def load_model(self, version="latest"):
+    def load_model(self, model_version):
         """Load model from disk. Falls back to base model if no fine-tuned model exists."""
         try:
-            # Try loading fine-tuned model first
-            model_path = os.path.join(self.model_dir, "fine_tuned", version)
+            # Try loading weights if they exist
+            model_path = self._get_model_path(model_version)
+            
+            # Load metadata if available
+            version_dir = self.model_dir / model_version
+            if os.path.exists(version_dir / "metadata.json"):
+                with open(version_dir / "metadata.json", "r") as f:
+                    metadata = json.load(f)
+                    self.category_map = metadata["category_map"]
+                    self.logger.info(f"Loaded category map from metadata: {self.category_map}")
+            
+            # Create new model instance with correct number of classes
+            model = TaskClassifier(num_classes=len(self.category_map))
+            
             if os.path.exists(model_path):
-                return self.load_fine_tuned_model(model_path)
+                model.load_state_dict(torch.load(model_path, map_location='cpu'))
+                self.logger.info(f"Loaded model weights from {model_path}")
+            else:
+                self.logger.info("No model weights found, using initialized model")
             
-            # If no fine-tuned model exists, return base model
-            self.logger.info("No fine-tuned model found. Using base model.")
-            return self.load_base_model()
-            
+            model.eval()
+            return model
+                
         except Exception as e:
             self.logger.error(f"Error loading model: {str(e)}")
-            # Always fall back to base model on error
-            self.logger.info("Falling back to base model.")
             return self.load_base_model()
+
+    def _get_model_path(self, version: str) -> str:
+        """Get the path to the model file for the given version."""
+        # Check for version-specific model
+        version_dir = self.model_dir / version
+        model_path = version_dir / "model.pt"
+        
+        if os.path.exists(model_path):
+            # Load metadata to get category map
+            with open(version_dir / "metadata.json", "r") as f:
+                metadata = json.load(f)
+                self.category_map = metadata["category_map"]
+            return str(model_path)
+        
+        # If no fine-tuned model exists, return base model path
+        self.logger.info("No fine-tuned model found. Using base model.")
+        return str(self.model_dir / "base_model.pt")
 
     def load_fine_tuned_model(self, model_path: str):
         """Load a fine-tuned model from the given path."""
@@ -88,20 +127,16 @@ class ModelManager:
 
     def load_base_model(self):
         """Load the base model."""
-        num_classes = 10  # Adjust based on your actual number of categories
-        self.current_model = TaskClassifier(num_classes=num_classes)
-        
-        # Define meaningful category mappings
+        # Use the same category map as fine-tuned models
         self.category_map = {
-            "0": "Bug Fix",
-            "1": "Feature Request",
-            "2": "Documentation",
-            "3": "Enhancement",
-            "4": "Security",
-            "5": "Performance",
-            "6": "Testing",
-            "7": "UI/UX",
-            "8": "DevOps",
-            "9": "Other"
+            "Design": 0,
+            "Development": 1,
+            "Meeting": 2,
+            "Planning": 3,
+            "Research": 4
         }
-        return self.current_model
+        
+        # Create model with correct number of classes
+        model = TaskClassifier(num_classes=len(self.category_map))
+        model.eval()  # Set to evaluation mode
+        return model

@@ -1,17 +1,19 @@
 """
-Task Predictor
+Predictor
 
 Provides a high-level interface for making task category predictions.
 """
 
 from typing import List, Dict, Tuple
-from .manager import ModelManager
-from ..data.processor import DataProcessor
+from smartsynch.models.manager import ModelManager
+from smartsynch.data.processor import DataProcessor
 import torch
 import torch.nn.functional as F
 import logging
 
-class TaskPredictor:
+logger = logging.getLogger(__name__)
+
+class Predictor:
     def __init__(self, model_version: str = "latest"):
         """
         Initialize predictor with model and processor.
@@ -19,85 +21,121 @@ class TaskPredictor:
         Args:
             model_version: Version of model to load
         """
-        self.model_manager = ModelManager()
-        self.processor = DataProcessor()
-        self.model = self.model_manager.load_model(model_version)
-        self.category_map_reverse = {
-            idx: cat for cat, idx in self.model_manager.category_map.items()
-        }
+        try:
+            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            self.model_manager = ModelManager()
+            self.processor = DataProcessor()
+            
+            # Debug logging for model loading
+            logger.info(f"Loading model version: {model_version}")
+            self.model = self.model_manager.load_model(model_version)
+            
+            # Debug logging for category mappings
+            logger.info(f"Original category map: {self.model_manager.category_map}")
+            
+            self.model.to(self.device)
+            self.category_map_reverse = {
+                idx: cat for cat, idx in self.model_manager.category_map.items()
+            }
+            
+            # Debug the reverse mapping
+            logger.info(f"Reverse category map: {self.category_map_reverse}")
+            
+        except Exception as e:
+            logger.error(f"Failed to initialize predictor: {str(e)}")
+            raise
 
     def predict(self, title: str, description: str) -> dict:
+        """Make a prediction for a single task."""
         try:
-            # Combine title and description
-            input_text = self.processor.combine_title_description(title, description)
-            print(f"Combined text: {input_text}")  # Debugging statement
+            # Preprocess input
+            title = title.strip().lower()
+            description = description.strip().lower()
             
-            input_tensor = self.processor.text_to_tensor(input_text)
-            print(f"Input tensor shape: {input_tensor.shape}")  # Debugging statement
+            # Process text
+            combined_text = self.processor.combine_title_description(title, description)
+            cleaned_text = self.processor.clean_text(combined_text)
             
             # Get model predictions
             with torch.no_grad():
-                # Get raw logits
-                logits = self.model.forward(input_tensor)
-                print(f"Logits: {logits}")  # Debugging statement
-                
-                # Convert to probabilities
+                logits = self.model([cleaned_text])
                 probabilities = F.softmax(logits, dim=1)
-                print(f"Probabilities: {probabilities}")  # Debugging statement
-                
-                # Get predicted class and confidence
                 confidence, predicted_class = torch.max(probabilities, dim=1)
                 
                 # Convert to Python types
                 predicted_class = int(predicted_class.item())
                 confidence = float(confidence.item())
                 
-                # Get category name
-                category = self.model_manager.category_map.get(str(predicted_class), "Unknown")
-                print(f"Predicted class: {predicted_class}, Category: {category}, Confidence: {confidence}")  # Debugging statement
-            
-            return {
-                "category": category,
-                "category_id": predicted_class,
-                "confidence": confidence,
-                "probabilities": {
-                    self.model_manager.category_map.get(str(i)): float(prob)
+                # Debug logging
+                logger.debug(f"Predicted class index: {predicted_class}")
+                logger.debug(f"Category map reverse: {self.category_map_reverse}")
+                category = self.category_map_reverse.get(predicted_class, "Unknown")
+                
+                # Create probabilities dict
+                prob_dict = {
+                    self.category_map_reverse[i]: float(prob)
                     for i, prob in enumerate(probabilities[0])
+                    if i in self.category_map_reverse
                 }
-            }
-            
+                
+                return {
+                    "category": category,
+                    "category_id": predicted_class,
+                    "confidence": confidence,
+                    "probabilities": prob_dict,
+                    "alternatives": [] if confidence >= 0.8 else [
+                        (cat, float(prob)) 
+                        for cat, prob in prob_dict.items()
+                        if cat != category
+                    ][:2]
+                }
+                
         except Exception as e:
-            print(f"Error in prediction: {str(e)}")  # Debugging statement
+            logger.error(f"Prediction failed: {str(e)}")
             raise ValueError(f"Prediction error: {str(e)}")
 
     def batch_predict(self, tasks: List[Dict[str, str]]) -> List[Dict[str, any]]:
-        """
-        Make predictions for multiple tasks.
-        
-        Args:
-            tasks: List of dictionaries containing 'title' and 'description'
+        """Make predictions for multiple tasks."""
+        try:
+            # Process all texts
+            texts = [
+                self.processor.combine_title_description(
+                    task['title'], task['description']
+                )
+                for task in tasks
+            ]
             
-        Returns:
-            List of prediction results
-        """
-        texts = [
-            self.processor.combine_title_description(
-                task['title'], task['description']
-            )
-            for task in tasks
-        ]
-        cleaned_texts = [self.processor.clean_text(text) for text in texts]
-        
-        # Get batch predictions
-        pred_indices, confidences = self.model.predict(cleaned_texts)
-        
-        # Format results
-        results = []
-        for idx, conf in zip(pred_indices, confidences):
-            results.append({
-                "category": self.category_map_reverse[idx],
-                "confidence": float(conf),
-                "alternatives": []  # Could add alternatives if needed
-            })
-        
-        return results
+            # Get batch predictions
+            with torch.no_grad():
+                # Convert texts to tensors
+                input_tensors = torch.stack([
+                    self.processor.text_to_tensor(text) for text in texts
+                ]).to(self.device)
+                
+                # Get predictions
+                logits = self.model.forward(input_tensors)
+                probabilities = F.softmax(logits, dim=1)
+                
+                # Get predicted classes and confidences
+                confidences, predicted_classes = torch.max(probabilities, dim=1)
+                
+                # Format results
+                results = []
+                for idx, (pred_class, conf, probs) in enumerate(zip(
+                    predicted_classes, confidences, probabilities)):
+                    results.append({
+                        "category": self.category_map_reverse.get(int(pred_class), "Unknown"),
+                        "category_id": int(pred_class),
+                        "confidence": float(conf),
+                        "probabilities": {
+                            self.category_map_reverse.get(i): float(prob)
+                            for i, prob in enumerate(probs)
+                        }
+                    })
+                
+                return results
+                
+        except Exception as e:
+            logger.error(f"Batch prediction failed: {str(e)}")
+            raise ValueError(f"Batch prediction error: {str(e)}")
+

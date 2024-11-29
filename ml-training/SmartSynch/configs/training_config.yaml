@@ -26,4 +26,11 @@ early_stopping:
   monitor: "val_loss"
   min_delta: 0.001
   patience: 5
-  mode: "min" 
+  mode: "min"
+
+# Model Saving
+saving:
+  base_dir: "models/fine_tuned"
+  save_format: "model.pt"
+  save_metadata: true
+

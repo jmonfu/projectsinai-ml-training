@@ -132,22 +132,10 @@ class DataProcessor:
         return train_test_split(X, y, test_size=test_size, 
                               random_state=random_state, stratify=y)
 
-    def text_to_tensor(self, text: Union[str, List[str]]) -> torch.Tensor:
+    def text_to_tensor(self, text: str) -> torch.Tensor:
         """Convert text to tensor format."""
-        if isinstance(text, str):
-            # Tokenize the text
-            tokens = word_tokenize(text.lower())
-            
-            # Create a fixed-size tensor filled with zeros
-            tensor = torch.zeros(self.max_length, dtype=torch.long)
-            
-            # Fill tensor with token lengths (or whatever encoding you're using)
-            for i, token in enumerate(tokens[:self.max_length]):
-                tensor[i] = len(token)
-            
-            # Add batch dimension
-            return tensor.unsqueeze(0)  # Shape becomes [1, max_length]
-        else:
-            # Handle list of texts
-            tensors = [self.text_to_tensor(t) for t in text]
-            return torch.cat(tensors, dim=0)  # Stack along batch dimension
+        # Generate embedding
+        embedding = self.encoder.encode(text, convert_to_tensor=True)
+        if embedding.dim() == 1:
+            embedding = embedding.unsqueeze(0)  # Add batch dimension
+        return embedding

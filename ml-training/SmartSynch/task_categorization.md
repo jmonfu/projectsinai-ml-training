@@ -676,10 +676,11 @@ The training script will:
 # Using separate feature and label files
 
 python -m scripts.evaluate_model \
-    --model-path models/fine_tuned/20241128_075710/model.pt \
+    --model-path models/fine_tuned/20241128_144942/model.pt \
     --test-data data/processed/X_val.npy \
     --labels data/processed/y_val.npy \
     --output-dir evaluation_results
+    
 ```
 
 This will:

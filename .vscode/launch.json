@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: FastAPI",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "smartsynch.api.main:app",
+                "--reload"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/ml-training/SmartSynch"
+            },
+            "cwd": "${workspaceFolder}/ml-training/SmartSynch",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ]
+} 
