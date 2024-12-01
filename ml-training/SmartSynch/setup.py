@@ -11,8 +11,12 @@ if __name__ == "__main__":
 setuptools_setup(
     name="smartsynch",
     version="0.1.0",
-    packages=find_packages(),
+    packages=find_packages(where="."),
+    package_dir={"": "."},
     install_requires=[
+        "fastapi",
+        "uvicorn",
+        "redis",
         "tensorflow>=2.18.0",
         "torch",
         "transformers",

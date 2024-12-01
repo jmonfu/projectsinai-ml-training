@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 import redis
 from typing import List, Dict, Optional
 import logging
+import os
 
 # Set up logging
 logging.basicConfig(
@@ -35,9 +36,10 @@ app.add_middleware(
 )
 
 # Initialize Redis client
+# Initialize Redis client
 redis_client = redis.Redis(
-    host="localhost",
-    port=6379,
+    host=os.getenv("REDIS_HOST", "localhost"),
+    port=int(os.getenv("REDIS_PORT", 6379)),
     db=0,
     decode_responses=True
 )
@@ -49,6 +51,11 @@ from .routes import predictions, feedback, health
 app.include_router(predictions.router, prefix="/api/v1")
 app.include_router(feedback.router, prefix="/api/v1")
 app.include_router(health.router, prefix="/api/v1")
+
+# Add a health check endpoint (Render will use this)
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
