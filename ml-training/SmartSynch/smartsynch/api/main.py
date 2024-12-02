@@ -11,6 +11,7 @@ import redis
 from typing import List, Dict, Optional
 import logging
 import os
+from dotenv import load_dotenv
 
 # Set up logging
 logging.basicConfig(
@@ -35,11 +36,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize Redis client
+# Determine which .env file to load based on the ENV variable
+env_file = ".env.development" if os.getenv("ENV") == "development" else ".env.production"
+load_dotenv(env_file)
+
 # Initialize Redis client
 redis_client = redis.Redis(
-    host=os.getenv("REDIS_HOST", "localhost"),
-    port=int(os.getenv("REDIS_PORT", 6379)),
+    host=os.getenv("REDIS_HOST"),
+    port=int(os.getenv("REDIS_PORT")),
+    password=os.getenv("REDIS_PASSWORD", None),
     db=0,
     decode_responses=True
 )
@@ -48,12 +53,12 @@ redis_client = redis.Redis(
 from .routes import predictions, feedback, health
 
 # Include routers
-app.include_router(predictions.router, prefix="/api/v1")
-app.include_router(feedback.router, prefix="/api/v1")
-app.include_router(health.router, prefix="/api/v1")
+app.include_router(predictions.router, prefix="/api/smartsynch/v1")
+app.include_router(feedback.router, prefix="/api/smartsynch/v1")
+app.include_router(health.router, prefix="/api/smartsynch/v1")
 
 # Add a health check endpoint (Render will use this)
-@app.get("/health")
+@app.get("/api/smartsynch/v1/health")
 async def health_check():
     return {"status": "healthy"}
 
