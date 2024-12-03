@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install EVERYTHING we need in one RUN to reduce layers
+# Install dependencies in one RUN
 RUN apt-get update && apt-get install -y \
     build-essential \
     python3-dev \
