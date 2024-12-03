@@ -1,8 +1,0 @@
-[build]
-builder = "nixpacks"
-buildCommand = "pip install -r requirements.txt && pip install -e ."
-
-[deploy]
-startCommand = "uvicorn smartsynch.api.main:app --host 0.0.0.0 --port $PORT"
-healthcheckPath = "/api/smartsynch/v1/health"
-healthcheckTimeout = 100
