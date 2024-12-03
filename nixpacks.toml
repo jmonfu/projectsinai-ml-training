@@ -1,0 +1,20 @@
+[phases.setup]
+nixPkgs = [
+    "python311",
+    "gcc",
+    "python311Packages.pip",
+    "python311Packages.setuptools"
+]
+
+[phases.install]
+cmds = [
+    "python -m ensurepip --upgrade",
+    "python -m pip install --upgrade pip setuptools wheel",
+    "python -m pip install -r requirements.txt"
+]
+
+[phases.build]
+cmds = ["true"]
+
+[start]
+cmd = "uvicorn smartsynch.api.main:app --host 0.0.0.0 --port $PORT"
