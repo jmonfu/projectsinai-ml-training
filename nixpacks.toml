@@ -1,17 +1,22 @@
 [phases.setup]
 nixPkgs = [
     "python311",
-    "gcc"
+    "gcc",
+    "binutils"
 ]
 
 [phases.install]
+aptPkgs = [
+    "python3-dev",
+    "python3-pip"
+]
+
 cmds = [
-    "python -m pip install --upgrade pip",
-    "python -m pip install -r requirements.txt"
+    "python3 -m pip install --no-cache-dir -r requirements.txt"
 ]
 
 [phases.build]
 cmds = ["true"]
 
 [start]
-cmd = "uvicorn smartsynch.api.main:app --host 0.0.0.0 --port $PORT"
+cmd = "python3 -m uvicorn smartsynch.api.main:app --host 0.0.0.0 --port $PORT"
