@@ -2,14 +2,9 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "pip install -r requirements.txt && pip install -e ."
+    "buildCommand": "pip install -r requirements.txt"
   },
   "deploy": {
-    "numReplicas": 1,
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10,
-    "startCommand": "uvicorn smartsynch.api.main:app --host 0.0.0.0 --port $PORT",
-    "healthcheckPath": "/api/smartsynch/v1/health",
-    "healthcheckTimeout": 100
+    "startCommand": "uvicorn smartsynch.api.main:app --host 0.0.0.0 --port $PORT"
   }
 }
