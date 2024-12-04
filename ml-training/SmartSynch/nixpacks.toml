@@ -1,25 +1,13 @@
 [phases.setup]
 nixPkgs = [
     "python311",
-    "gcc",
-    "python311Packages.pip",
-    "python311Packages.setuptools",
-    "python311Packages.wheel",
-    "bash"
-]
-
-[phases.build]
-cmds = [
-    "ln -sf $(which python3) /usr/local/bin/python",
-    "ln -sf $(which pip3) /usr/local/bin/pip",
-    "export PATH=/usr/local/bin:$PATH"
+    "python311Packages.pip"
 ]
 
 [phases.install]
 cmds = [
-    "/usr/local/bin/python -m pip install --upgrade pip setuptools wheel",
-    "/usr/local/bin/python -m pip install --no-cache-dir -r requirements.txt"
+    "python3 -m pip install --no-cache-dir -r requirements.txt"
 ]
 
 [start]
-cmd = "/usr/local/bin/python -m uvicorn smartsynch.api.main:app --host 0.0.0.0 --port $PORT"
+cmd = "python3 -m uvicorn smartsynch.api.main:app --host 0.0.0.0 --port $PORT"
