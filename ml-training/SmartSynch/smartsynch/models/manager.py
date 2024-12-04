@@ -106,19 +106,18 @@ class ModelManager:
 
     def _train_new_model(self, model_config):
         """Train a new model if no fine-tuned model is found"""
-        from scripts.train_model import main as train_model
+        from scripts.train_model import train_model
         
         logging.info("Training new model...")
-        train_model()  # This will train and save a new model
         
-        # Try to load the newly trained model
-        model_dir = Path('models/fine_tuned')
-        latest_model = max(model_dir.glob('*/model.pt'), key=lambda p: p.parent.name)
+        # Call train_model function directly instead of main()
+        model = train_model(
+            config_path='configs/training_config.yaml',
+            data_dir='data/processed'
+        )
         
-        model = TaskClassifier(config=model_config)
-        model.load_state_dict(torch.load(latest_model))
+        # Model is already trained, just return it
         model.eval()
-        
         return model
 
     def _get_model_path(self, version: str) -> str:

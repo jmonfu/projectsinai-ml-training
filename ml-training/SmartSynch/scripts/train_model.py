@@ -99,15 +99,10 @@ def evaluate(model, val_loader, criterion, device):
     
     return metrics
 
-def main():
-    """Main training pipeline."""
-    parser = argparse.ArgumentParser(description='Train task categorization model')
-    parser.add_argument('--config', type=str, default='configs/training_config.yaml')
-    parser.add_argument('--data-dir', type=str, default='data/processed')
-    args = parser.parse_args()
-    
+def train_model(config_path='configs/training_config.yaml', data_dir='data/processed'):
+    """Training function that can be called programmatically"""
     # Load config
-    with open(args.config) as f:
+    with open(config_path) as f:
         config = yaml.safe_load(f)
     
     # Set device
@@ -115,7 +110,7 @@ def main():
     logger.info(f"Using device: {device}")
     
     # Load data
-    data_dir = Path(args.data_dir)
+    data_dir = Path(data_dir)
     X_train, X_val, y_train, y_val, category_map = load_training_data(data_dir)
     
     # Create data loaders
@@ -140,6 +135,16 @@ def main():
     
     # Train the model
     model.train_model(train_loader, val_loader, criterion, optimizer, device)
+    return model
+
+def main():
+    """Command line entry point"""
+    parser = argparse.ArgumentParser(description='Train task categorization model')
+    parser.add_argument('--config', type=str, default='configs/training_config.yaml')
+    parser.add_argument('--data-dir', type=str, default='data/processed')
+    args = parser.parse_args()
+    
+    train_model(args.config, args.data_dir)
 
 if __name__ == "__main__":
     main()

@@ -15,15 +15,25 @@ from sentence_transformers import SentenceTransformer
 logger = logging.getLogger(__name__)
 
 class Predictor:
+    _instance = None
+    _initialized = False
+    
+    def __new__(cls, model_path=None):
+        if cls._instance is None:
+            cls._instance = super(Predictor, cls).__new__(cls)
+        return cls._instance
+
     def __init__(self, model_path=None):
-        self.model_manager = ModelManager()
-        self.model = self.model_manager.load_model(model_path)
-        self.categories = list(self.model_manager.category_map.keys())
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.confidence_threshold = 0.15
-        self.model.to(self.device)
-        self.model.eval()
-        self.sentence_transformer = SentenceTransformer('all-MiniLM-L6-v2')
+        if not self._initialized:
+            self.model_manager = ModelManager()
+            self.model = self.model_manager.load_model(model_path)
+            self.categories = list(self.model_manager.category_map.keys())
+            self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+            self.confidence_threshold = 0.15
+            self.model.to(self.device)
+            self.model.eval()
+            self.sentence_transformer = SentenceTransformer('all-MiniLM-L6-v2')
+            self._initialized = True
 
     def get_embeddings(self, text):
         """Get embeddings for input text using SentenceTransformer"""

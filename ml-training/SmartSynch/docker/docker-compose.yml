@@ -6,19 +6,26 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ../models:/app/models
+      - sentence_transformers:/root/.cache/torch/sentence_transformers
+      - model_cache:/app/models
     environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6380
+      - REDISHOST=redis
+      - REDISPORT=6379
+      - REDISPASSWORD=devpassword123
+      - MODEL_PATH=models/
+      - DEBUG=True
     depends_on:
       - redis
 
   redis:
     image: redis:6-alpine
+    command: redis-server --requirepass devpassword123
     ports:
       - "6380:6379"
     volumes:
       - redis_data:/data
 
 volumes:
-  redis_data: 
+  model_cache:
+  redis_data:
+  sentence_transformers: 
