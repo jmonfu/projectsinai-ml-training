@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install dependencies in one RUN
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     python3-dev \
@@ -11,18 +11,22 @@ RUN apt-get update && apt-get install -y \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and install requirements
-COPY requirements.txt .
-RUN pip install --upgrade pip && \
-    python3 -m pip install --no-cache-dir -r requirements.txt
+# Upgrade pip
+RUN python -m pip install --upgrade pip
 
-# Copy the rest
+# Copy requirements first for better caching
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application
 COPY . .
 
-# Set Python path to include the app directory
+# Set Python path
 ENV PYTHONPATH=/app:${PYTHONPATH}
 
+# Expose port
 ENV PORT=8000
 EXPOSE 8000
 
+# Run the application
 CMD python3 -m uvicorn smartsynch.api.main:app --host 0.0.0.0 --port ${PORT}
