@@ -2,31 +2,17 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    python3-dev \
-    python3-pip \
-    gcc \
-    g++ \
-    && rm -rf /var/lib/apt/lists/*
-
-# Upgrade pip
-RUN python -m pip install --upgrade pip
-
 # Copy requirements first for better caching
 COPY requirements.txt .
+
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application
 COPY . .
 
-# Set Python path
-ENV PYTHONPATH=/app:${PYTHONPATH}
-
-# Expose port
+# Set environment variable for port
 ENV PORT=8000
-EXPOSE 8000
 
-# Run the application
-CMD python3 -m uvicorn smartsynch.api.main:app --host 0.0.0.0 --port ${PORT}
+# Run the web service on container startup
+CMD ["uvicorn", "smartsynch.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
