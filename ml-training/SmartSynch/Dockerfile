@@ -1,36 +1,31 @@
-FROM ubuntu:latest
+# Use official Python runtime as a base image
+FROM python:3.11-slim
 
-# Avoid prompts from apt
-ENV DEBIAN_FRONTEND=noninteractive
+# Set environment variable to prevent Python from buffering stdout and stderr
+ENV PYTHONUNBUFFERED=1
 
-# Install Python and pip
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    python3.11 \
-    python3-pip \
-    python3.11-dev \
     gcc \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Create symbolic links for python and pip
-RUN ln -s /usr/bin/python3 /usr/bin/python && \
-    ln -s /usr/bin/pip3 /usr/bin/pip
-
 # Set working directory
 WORKDIR /app
 
-# Copy requirements first to leverage Docker cache
+# Install Python dependencies first
 COPY requirements.txt .
 
-# Install Python dependencies
-RUN pip3 install --no-cache-dir -r requirements.txt
+# Ensure pip is installed and up to date
+RUN python -m ensurepip --upgrade && \
+    python -m pip install --upgrade pip && \
+    python -m pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application
 COPY . .
 
-# Expose the port (Railway sets this automatically)
-ENV PORT=8000
-EXPOSE ${PORT}
+# Expose the port
+EXPOSE $PORT
 
-# Run the web service on container startup
-CMD uvicorn smartsynch.api.main:app --host 0.0.0.0 --port ${PORT}
+# Start command
+CMD uvicorn smartsynch.api.main:app --host 0.0.0.0 --port $PORT
