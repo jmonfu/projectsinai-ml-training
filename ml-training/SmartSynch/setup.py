@@ -1,10 +1,9 @@
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 
 setup(
     name="smartsynch",
     version="1.0.0",
-    packages=find_packages(include=['smartsynch', 'smartsynch.*']),
-    package_dir={"": "."},
+    packages=find_namespace_packages(include=["smartsynch*"]),
     install_requires=[
         "fastapi",
         "uvicorn",
