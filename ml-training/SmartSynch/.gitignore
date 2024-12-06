@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.env
+.env.development
+.env.production
+
+# Model files
+models/fine_tuned/*
+!models/fine_tuned/.gitkeep
+
+# Build
+*.egg-info/
+build/
+
+# IDE
+.vscode/

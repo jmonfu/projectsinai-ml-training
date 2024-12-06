@@ -361,80 +361,92 @@
       "confidence": 1.0
     },
     {
-      "title": "Weekly team sync",
-      "description": "Regular team meeting to discuss progress and blockers",
+      "title": "Cross-team sync",
+      "description": "Coordination meeting between frontend and backend teams",
       "category": "Meeting",
       "confidence": 1.0
     },
     {
-      "title": "Client presentation",
-      "description": "Present project progress and gather client feedback",
+      "title": "UX review session",
+      "description": "Review user experience findings and improvement proposals",
       "category": "Meeting",
       "confidence": 1.0
     },
     {
-      "title": "Design review",
-      "description": "Review and discuss new design proposals with team",
+      "title": "Infrastructure planning",
+      "description": "Team discussion about cloud infrastructure changes",
+      "category": "Meeting",
+      "confidence": 1.0
+    },
+    {
+      "title": "Quarterly planning",
+      "description": "Strategic planning meeting for next quarter objectives",
+      "category": "Meeting",
+      "confidence": 1.0
+    },
+    {
+      "title": "Documentation review",
+      "description": "Team review of API documentation updates",
+      "category": "Meeting",
+      "confidence": 1.0
+    },
+    {
+      "title": "Performance metrics review",
+      "description": "Analysis of system performance and optimization strategies",
+      "category": "Meeting",
+      "confidence": 1.0
+    },
+    {
+      "title": "Onboarding session",
+      "description": "New team member orientation and setup meeting",
+      "category": "Meeting",
+      "confidence": 1.0
+    },
+    {
+      "title": "Feature prioritization",
+      "description": "Stakeholder meeting to prioritize upcoming features",
+      "category": "Meeting",
+      "confidence": 1.0
+    },
+    {
+      "title": "Testing strategy sync",
+      "description": "Discuss and align on QA testing approach",
+      "category": "Meeting",
+      "confidence": 1.0
+    },
+    {
+      "title": "Deployment review",
+      "description": "Post-deployment review and lessons learned discussion",
+      "category": "Meeting",
+      "confidence": 1.0
+    },
+    {
+      "title": "Weekly team standup",
+      "description": "Regular sync meeting to discuss progress and blockers",
       "category": "Meeting",
       "confidence": 1.0
     },
     {
       "title": "Sprint retrospective",
-      "description": "Team discussion about sprint outcomes and improvements",
+      "description": "Team meeting to review sprint outcomes and improvements",
+      "category": "Meeting",
+      "confidence": 1.0
+    },
+    {
+      "title": "Client presentation",
+      "description": "Present project updates and demo to stakeholders",
+      "category": "Meeting",
+      "confidence": 1.0
+    },
+    {
+      "title": "Product roadmap review",
+      "description": "Discuss and align on product strategy and timeline",
       "category": "Meeting",
       "confidence": 1.0
     },
     {
       "title": "Architecture review",
-      "description": "Discuss and review system architecture changes",
-      "category": "Meeting",
-      "confidence": 1.0
-    },
-    {
-      "title": "Stakeholder update",
-      "description": "Update meeting with project stakeholders",
-      "category": "Meeting",
-      "confidence": 1.0
-    },
-    {
-      "title": "Code review session",
-      "description": "Team code review and best practices discussion",
-      "category": "Meeting",
-      "confidence": 1.0
-    },
-    {
-      "title": "Product demo",
-      "description": "Demonstrate new features to stakeholders",
-      "category": "Meeting",
-      "confidence": 1.0
-    },
-    {
-      "title": "Team training",
-      "description": "Technical training session for team members",
-      "category": "Meeting",
-      "confidence": 1.0
-    },
-    {
-      "title": "Project kickoff",
-      "description": "Initial meeting to launch new project phase",
-      "category": "Meeting",
-      "confidence": 1.0
-    },
-    {
-      "title": "Security review",
-      "description": "Review security protocols and potential risks",
-      "category": "Meeting",
-      "confidence": 1.0
-    },
-    {
-      "title": "Performance review",
-      "description": "Discuss system performance metrics and improvements",
-      "category": "Meeting",
-      "confidence": 1.0
-    },
-    {
-      "title": "User feedback session",
-      "description": "Meeting to review and discuss user feedback",
+      "description": "Technical discussion of system architecture changes",
       "category": "Meeting",
       "confidence": 1.0
     },
