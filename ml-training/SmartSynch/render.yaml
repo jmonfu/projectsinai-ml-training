@@ -3,13 +3,13 @@ services:
     name: smartsynch-ml
     env: python
     buildCommand: |
-      cd ml-training/SmartSynch && \
+      cd ml-training && \
       python -m pip install --upgrade pip && \
-      pip install -r requirements.txt && \
-      pip install -e .
+      pip install -r SmartSynch/requirements.txt && \
+      pip install -e SmartSynch/
     startCommand: |
       cd ml-training/SmartSynch && \
-      PYTHONPATH=$PWD uvicorn wsgi:app --host 0.0.0.0 --port $PORT
+      PYTHONPATH=$PWD uvicorn smartsynch.api.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.9
