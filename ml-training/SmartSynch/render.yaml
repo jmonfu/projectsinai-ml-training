@@ -9,7 +9,7 @@ services:
       pip install -e .
     startCommand: |
       cd ml-training/SmartSynch && \
-      python app.py
+      PYTHONPATH=$PWD uvicorn app:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.9
