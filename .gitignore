@@ -6,10 +6,6 @@ node_modules
 # Testing
 /coverage
 
-# Next.js
-/.next/
-/out/
-
 # Production
 /build
 
@@ -22,12 +18,16 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Local env files
-.env*.local
+# Ignore model files
+*.pt
+ml-training/SmartSynch/models/fine_tuned/
 
-# Vercel
-.vercel
-
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
+# Build files
+build/
+*.egg-info/
+__pycache__/
+*.pyc
+.env
+.env.production
+.env.development
+docker_bash_command.txt
