@@ -21,7 +21,6 @@ yarn-error.log*
 # Ignore model files
 *.pt
 ml-training/SmartSynch/models/fine_tuned/
-!ml-training/SmartSynch/models/fine_tuned/.gitkeep
 
 # Build files
 build/
@@ -31,4 +30,3 @@ __pycache__/
 .env
 .env.production
 .env.development
-docker_bash_command.txt
