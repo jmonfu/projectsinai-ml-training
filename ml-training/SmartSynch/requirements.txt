@@ -10,5 +10,4 @@ pandas
 scikit-learn
 nltk==3.9.1
 spacy==3.8.2
-pydantic==2.10.2
-uvicorn-multiprocess==0.1.0
+pydantic<3.0.0,>=2.0.0
