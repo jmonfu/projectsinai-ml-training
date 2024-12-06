@@ -31,3 +31,4 @@ __pycache__/
 .env.production
 .env.development
 docker_bash_command.txt
+ml-training/SmartSynch/smartsynch/api/__pycache__/main.cpython-310.pyc
