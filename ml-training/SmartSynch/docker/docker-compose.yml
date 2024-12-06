@@ -2,30 +2,23 @@ services:
   api:
     build:
       context: ..
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
     ports:
       - "8000:8000"
     volumes:
-      - sentence_transformers:/root/.cache/torch/sentence_transformers
-      - model_cache:/app/models
+      - ../models:/app/models
     environment:
-      - REDISHOST=redis
-      - REDISPORT=6379
-      - REDISPASSWORD=devpassword123
-      - MODEL_PATH=models/
-      - DEBUG=True
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
     depends_on:
       - redis
 
   redis:
     image: redis:6-alpine
-    command: redis-server --requirepass devpassword123
     ports:
       - "6380:6379"
     volumes:
       - redis_data:/data
 
 volumes:
-  model_cache:
-  redis_data:
-  sentence_transformers: 
+  redis_data: 

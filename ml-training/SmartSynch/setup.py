@@ -1,4 +1,4 @@
-from setuptools import setup as setuptools_setup, find_namespace_packages
+from setuptools import setup as setuptools_setup, find_packages
 import nltk
 
 def download_nltk_data():
@@ -11,7 +11,7 @@ if __name__ == "__main__":
 setuptools_setup(
     name="smartsynch",
     version="0.1.0",
-    packages=find_namespace_packages(include=["smartsynch*"]),
+    packages=find_packages(where="."),
     package_dir={"": "."},
     install_requires=[
         "fastapi",
