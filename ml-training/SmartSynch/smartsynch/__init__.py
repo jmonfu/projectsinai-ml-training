@@ -1,0 +1,1 @@
+"""SmartSynch Core Package"""
