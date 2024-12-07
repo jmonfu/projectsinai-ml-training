@@ -7,8 +7,7 @@ API endpoints for task categorization predictions.
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import logging
-import os
-from transformers import pipeline
+from ...models.predictor import Predictor
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -16,15 +15,29 @@ router = APIRouter()
 # Keyword sets for each category
 KEYWORDS = {
     "Research": [
-        ("research", 2.5), ("analyze", 2.5), ("investigate", 2.5),
-        ("study", 2.0), ("evaluate", 2.0), ("compare", 2.0),
-        ("explore", 1.5), ("assessment", 1.5), ("review", 1.5),
-        ("findings", 1.5), ("analysis", 1.5)
+        ("research", 3.0),
+        ("analyze", 2.5),
+        ("investigate", 2.5),
+        ("study", 2.0),
+        ("evaluate", 2.0),
+        ("compare", 2.0),
+        ("explore", 1.5),
+        ("assessment", 1.5),
+        ("review", 1.5),
+        ("findings", 1.5),
+        ("analysis", 1.5)
     ],
     "Development": [
-        ("implement", 2.0), ("code", 2.0), ("develop", 2.0),
-        ("programming", 1.5), ("api", 1.5), ("authentication", 1.0),
-        ("database", 1.0), ("backend", 1.0), ("frontend", 1.0)
+        ("implement", 2.0),
+        ("code", 2.0),
+        ("develop", 2.0),
+        ("programming", 1.5),
+        ("api", 1.5),
+        ("database", 1.5),
+        ("queries", 1.5),
+        ("optimize", 1.5),
+        ("bug", 2.0),
+        ("fix", 1.5)
     ],
     "Design": [
         ("design", 2.5), ("ui", 2.5), ("ux", 2.5), ("wireframe", 2.5),
@@ -37,9 +50,16 @@ KEYWORDS = {
         ("presentation", 1.5), ("demo", 1.5)
     ],
     "Planning": [
-        ("planning", 2.5), ("roadmap", 2.5), ("timeline", 2.0),
-        ("milestone", 2.0), ("schedule", 1.5), ("strategy", 1.5),
-        ("prioritize", 1.5), ("estimate", 1.5)
+        ("planning", 3.0),
+        ("plan", 3.0),
+        ("roadmap", 2.5),
+        ("timeline", 2.5),
+        ("milestone", 2.0),
+        ("schedule", 2.0),
+        ("strategy", 2.0),
+        ("migration", 2.0),
+        ("prioritize", 1.5),
+        ("estimate", 1.5)
     ]
 }
 
@@ -50,6 +70,8 @@ class TaskRequest(BaseModel):
 class PredictionResponse(BaseModel):
     category: str
     confidence: float
+
+predictor = Predictor()
 
 def predict_with_keywords(text: str) -> tuple[str, float] | None:
     """Predict category based on weighted keyword matching"""
@@ -124,87 +146,12 @@ def predict_with_keywords(text: str) -> tuple[str, float] | None:
     logger.info("No keyword matches found")
     return None
 
-def get_classifier():
-    token = os.getenv("HUGGINGFACE_TOKEN")
-    if not token:
-        raise HTTPException(status_code=500, detail="HUGGINGFACE_TOKEN not configured")
-    
-    return pipeline(
-        "zero-shot-classification",
-        model="facebook/bart-large-mnli",
-        token=token
-    )
-
 @router.post("/predict", response_model=PredictionResponse)
 async def predict_task(task: TaskRequest):
     """Predict category for a single task"""
     try:
+        # Try keyword matching first
         text = f"{task.title}. {task.description}"
-        text_lower = text.lower()
-        logger.info(f"Processing task: {text_lower}")
-        
-        # Special handling for sprint reviews and planning
-        if any(term in text_lower for term in ["sprint review", "sprint planning", "sprint retro"]):
-            return PredictionResponse(
-                category="Meeting",
-                confidence=90.0
-            )
-        
-        # Enhanced review detection
-        if "review" in text_lower or "evaluate" in text_lower:
-            review_aspects = set()
-            
-            # Check for status/progress first
-            has_status = any(word in text_lower for word in ["status", "progress", "general"])
-            
-            # Development aspects - strict matching for development
-            dev_keywords = ["code", "pr", "implementation", "api", "jwt", "auth"]
-            has_technical = any(word in text_lower for word in dev_keywords)
-            
-            # Mixed technical and status review
-            if has_technical and has_status:
-                return PredictionResponse(
-                    category="Research",
-                    confidence=85.0
-                )
-            
-            # Pure technical review
-            if has_technical and not has_status:
-                if any(term in text_lower for term in ["code review", "pr review"]) or \
-                   all(word in text_lower for word in ["implementation", "review"]):
-                    return PredictionResponse(
-                        category="Development",
-                        confidence=85.0
-                    )
-            
-            # Pure status review
-            if has_status and not has_technical:
-                return PredictionResponse(
-                    category="Research",
-                    confidence=80.0
-                )
-            
-            # Architecture review
-            if "architecture" in text_lower:
-                return PredictionResponse(
-                    category="Research",
-                    confidence=85.0
-                )
-            
-            # Project/Status aspects
-            if any(word in text_lower for word in ["project", "progress", "general"]):
-                return PredictionResponse(
-                    category="Research",
-                    confidence=80.0
-                )
-            
-            # Default for other reviews
-            return PredictionResponse(
-                category="Research",
-                confidence=80.0
-            )
-        
-        # Try keyword matching for non-review tasks
         keyword_result = predict_with_keywords(text)
         if keyword_result:
             category, confidence = keyword_result
@@ -213,18 +160,8 @@ async def predict_task(task: TaskRequest):
                 confidence=confidence
             )
         
-        # Fall back to ML classifier
-        classifier = get_classifier()
-        result = classifier(
-            text,
-            candidate_labels=list(KEYWORDS.keys()),
-            hypothesis_template="This task involves {}."
-        )
-        
-        return PredictionResponse(
-            category=result["labels"][0],
-            confidence=round(result["scores"][0] * 100, 2)
-        )
+        # Fall back to Hugging Face API
+        return predictor.predict(task.title, task.description)
     except Exception as e:
         logger.error(f"Prediction error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e)) 

@@ -8,9 +8,6 @@ setup(
         "fastapi==0.115.5",
         "uvicorn==0.32.1",
         "python-dotenv",
-        "transformers",
-        "torch",
-        "sentence-transformers",
         "huggingface-hub<1.0,>=0.23.2",
         "pydantic==2.10.2"
     ]
