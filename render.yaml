@@ -8,16 +8,17 @@ services:
       echo "Listing directory contents:"
       ls -la
       echo "Installing requirements..."
+      python -m pip install --upgrade pip
       pip install -r requirements.txt
       pip install -e .
     startCommand: |
-      echo "Python path before:" $PYTHONPATH
-      export PYTHONPATH=$PYTHONPATH:/opt/render/project/src/ml-training/SmartSynch
-      echo "Python path after:" $PYTHONPATH
-      echo "Current directory:" $(pwd)
+      echo "Current directory: $(pwd)"
       echo "Directory contents:"
       ls -la
-      uvicorn smartsynch.api.main:app --host 0.0.0.0 --port $PORT
+      echo "Python path: $PYTHONPATH"
+      cd /opt/render/project/src/ml-training/SmartSynch && \
+      PYTHONPATH=/opt/render/project/src/ml-training/SmartSynch \
+      uvicorn smartsynch.api.main:app --host 0.0.0.0 --port ${PORT:-8000}
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.10
