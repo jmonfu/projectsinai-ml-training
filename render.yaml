@@ -12,11 +12,10 @@ services:
       pip install -r requirements.txt
       pip install -e .
     startCommand: |
-      echo "Current directory: $(pwd)"
-      echo "Directory contents:"
-      ls -la
-      echo "Python path: $PYTHONPATH"
       cd /opt/render/project/src/ml-training/SmartSynch && \
+      echo "Current working directory: $(pwd)" && \
+      echo "Directory contents:" && \
+      ls -la && \
       PYTHONPATH=/opt/render/project/src/ml-training/SmartSynch \
       uvicorn smartsynch.api.main:app --host 0.0.0.0 --port ${PORT:-8000}
     envVars:
