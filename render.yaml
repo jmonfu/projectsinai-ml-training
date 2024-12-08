@@ -2,15 +2,8 @@ services:
   - type: web
     name: smartsynch-ml
     env: python
-    buildCommand: |
-      python -m pip install --upgrade pip && \
-      cd ml-training/SmartSynch && \
-      pip install -r requirements.txt && \
-      pip install -e .
-    startCommand: |
-      export PYTHONPATH=/opt/render/project/src/ml-training/SmartSynch && \
-      cd ml-training/SmartSynch && \
-      python -m uvicorn smartsynch.api.main:app --host 0.0.0.0 --port $PORT
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn ml-training.SmartSynch.smartsynch.api.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.10
