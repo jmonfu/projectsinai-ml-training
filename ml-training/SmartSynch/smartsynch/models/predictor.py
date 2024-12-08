@@ -1,527 +1,542 @@
-"""
-Predictor
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import SGDClassifier
+from sklearn.pipeline import Pipeline
+import joblib
+import numpy as np
+from typing import Dict, List, Tuple
+import os
+from pathlib import Path
 
-Provides a high-level interface for making task category predictions.
-"""
-
-import logging
-from typing import Dict, List, Tuple, Optional
-import re
-
-logger = logging.getLogger(__name__)
-
-class LocalPredictor:
+class MLPredictor:
     def __init__(self):
-        # Adjusted confidence thresholds
-        self.CONFIDENCE_THRESHOLDS = {
-            "VERY_HIGH": 95.0,    # Pure single category, multiple strong matches
-            "HIGH": 90.0,         # Single category, strong match
-            "MEDIUM_HIGH": 87.0,  # Clear winner with some mixed signals
-            "MEDIUM": 85.0,       # Mixed categories, clear winner
-            "MEDIUM_LOW": 82.0,   # Mixed categories, moderate competition
-            "LOW": 80.0           # Mixed categories, strong competition
+        os.makedirs("models", exist_ok=True)
+        self.model_path = "models/task_classifier.joblib"
+        
+        # Highly refined category weights based on priority and impact
+        self.category_weights = {
+            "Development": 1.0,    # Base weight for standard development
+            "Bug_Fix": 1.2,        # Higher priority for issues
+            "Feature": 1.0,
+            "Documentation": 0.8,
+            "Enhancement": 0.9,
+            "Security": 1.4,       # Highest priority for security
+            "Performance": 1.3,    # High priority for user experience
+            "Testing": 1.1,        # Increased for quality assurance
+            "UI_UX": 1.0,
+            "DevOps": 1.3,        # High priority for infrastructure
+            "Design": 0.9,
+            "Research": 0.8,
+            "Meeting": 0.6,
+            "Planning": 0.7,
+            "Other": 0.5
         }
-
-        # Weak terms that should significantly reduce confidence
-        self.WEAK_TERMS = {
-            "sync": -8.0,         # Increased penalty
-            "update": -8.0,       # Increased penalty
-            "check": -8.0,
-            "status": -8.0,
-            "general": -8.0,
-            "project": -5.0,      # Added penalty for generic terms
-            "team": -3.0,
-            "quick": -5.0,
-            "touch base": -8.0
+        
+        # Expanded confidence thresholds with granular levels
+        self.confidence_thresholds = {
+            "high": 92.0,          # Very confident prediction
+            "medium_high": 88.0,   # Good confidence
+            "medium": 85.0,        # Acceptable confidence
+            "low": 80.0,           # Requires review
+            "mixed": 75.0,         # Multiple categories
+            "uncertain": 70.0      # Needs human verification
         }
+        
+        # Enhanced ML pipeline with better feature extraction
+        self.pipeline = Pipeline([
+            ('vectorizer', TfidfVectorizer(
+                max_features=3000,  # Increased for more categories
+                ngram_range=(1, 3),  # Include trigrams
+                min_df=2,
+                stop_words='english'
+            )),
+            ('classifier', SGDClassifier(
+                loss='modified_huber',
+                alpha=1e-4,
+                max_iter=1000,
+                tol=1e-3,
+                random_state=42,
+                class_weight='balanced'
+            ))
+        ])
 
-        # Strong terms that should maintain confidence
-        self.STRONG_TERMS = {
-            "implementation": 3.0,
-            "architecture": 3.0,
-            "research findings": 4.0,
-            "sprint planning": 4.0,
-            "technical design": 4.0,
-            "performance analysis": 4.0
-        }
-
-        # Minimum word requirements for confidence
-        self.MIN_WORDS = {
-            "VERY_HIGH": 6,   # Need substantial description
-            "HIGH": 4,        # Need decent description
-            "MEDIUM": 3       # Minimum for medium confidence
-        }
-
-        # Add minimal context penalty
-        self.MINIMAL_CONTEXT_TERMS = {
-            "sync": -5.0,
-            "update": -5.0,
-            "status": -5.0,
-            "check": -5.0,
-            "touch base": -5.0
-        }
-
-        # Add strong category combinations that should reduce confidence
-        self.STRONG_COMBINATIONS = [
-            ("design", "planning", "meeting"),
-            ("research", "development", "planning"),
-            ("technical", "review", "meeting"),
-            ("design", "review", "planning")
-        ]
-
-        # Refined category combinations with specific confidence impacts
-        self.CATEGORY_COMBINATIONS = {
-            ("design", "planning"): -3.0,
-            ("design", "meeting"): -4.0,
-            ("research", "development"): -3.0,
-            ("planning", "meeting"): -2.0,
-            ("research", "planning"): -3.0
-        }
-
-        # Context strength multipliers
-        self.CONTEXT_STRENGTH = {
-            "strong": {
-                "implementation": 1.5,
-                "architecture": 1.5,
-                "research findings": 1.5,
-                "sprint planning": 1.5
+        # Comprehensive category keywords with technical specificity
+        self.category_keywords = {
+            'Bug_Fix': {
+                'primary': ['fix', 'bug', 'issue', 'crash', 'error'],
+                'secondary': ['debug', 'resolve', 'patch']
             },
-            "weak": {
-                "sync": 0.7,
-                "update": 0.7,
-                "review": 0.7,
-                "check": 0.7
+            'Feature': {
+                'primary': ['feature', 'add', 'new', 'implement'],
+                'secondary': ['create', 'enable', 'support']
+            },
+            'Documentation': {
+                'primary': ['document', 'docs', 'guide', 'readme'],
+                'secondary': ['write', 'update', 'explain']
+            },
+            'Enhancement': {
+                'primary': ['improve', 'enhance', 'optimize', 'refactor'],
+                'secondary': ['clean', 'better', 'upgrade']
+            },
+            'Security': {
+                'primary': ['security', 'vulnerability', 'auth', 'protect', 'encrypt', 'hack', 'breach'],
+                'secondary': ['pentest', 'csrf', 'xss', 'injection', 'token', 'access']
+            },
+            'Performance': {
+                'primary': ['performance', 'optimize', 'slow', 'fast', 'speed', 'latency', 'memory', 'cpu', 'load'],
+                'secondary': ['cache', 'index', 'query', 'response', 'time', 'bottleneck']
+            },
+            'Testing': {
+                'primary': ['test', 'coverage', 'unit test', 'e2e'],
+                'secondary': ['verify', 'validate', 'check']
+            },
+            'UI_UX': {
+                'primary': ['ui', 'ux', 'interface', 'usability'],
+                'secondary': ['design', 'layout', 'visual']
+            },
+            'DevOps': {
+                'primary': ['pipeline', 'deploy', 'ci/cd', 'docker', 'kubernetes', 'k8s', 'aws', 'cloud'],
+                'secondary': ['terraform', 'infrastructure', 'container', 'orchestration', 'monitoring']
+            },
+            'Development': {
+                'primary': ['develop', 'code', 'implement', 'program'],
+                'secondary': ['build', 'create', 'setup']
+            },
+            'Design': {
+                'primary': ['design', 'wireframe', 'mockup', 'prototype'],
+                'secondary': ['sketch', 'layout', 'visual']
+            },
+            'Research': {
+                'primary': ['research', 'investigate', 'analyze', 'evaluate'],
+                'secondary': ['study', 'compare', 'assess']
+            },
+            'Meeting': {
+                'primary': ['meeting', 'sync', 'standup', 'review'],
+                'secondary': ['discuss', 'call', 'session']
+            },
+            'Planning': {
+                'primary': ['plan', 'roadmap', 'strategy', 'schedule'],
+                'secondary': ['organize', 'coordinate', 'prepare']
+            },
+            'Other': {
+                'primary': ['misc', 'general', 'other'],
+                'secondary': ['various', 'additional']
+            },
+            "Performance": {
+                "primary": [
+                    "performance", "optimize", "slow", "fast", "speed", 
+                    "latency", "memory", "cpu", "load", "throughput",
+                    "bottleneck", "response time", "resource usage"
+                ],
+                "secondary": [
+                    "cache", "index", "query", "response", "time",
+                    "concurrent", "parallel", "async", "batch",
+                    "throttle", "buffer", "pool", "queue"
+                ],
+                "technical": [
+                    "n+1", "lazy loading", "connection pooling",
+                    "dead locks", "race condition", "memory leak",
+                    "garbage collection", "thread pool", "event loop"
+                ]
+            },
+            "Security": {
+                "primary": [
+                    "security", "vulnerability", "auth", "protect",
+                    "encrypt", "hack", "breach", "exploit", "threat"
+                ],
+                "secondary": [
+                    "pentest", "csrf", "xss", "injection", "token",
+                    "access", "permission", "role", "privilege"
+                ],
+                "technical": [
+                    "oauth", "jwt", "ssl", "tls", "cipher",
+                    "hash", "salt", "mitm", "zero-day", "cve",
+                    "audit log", "rate limit", "firewall"
+                ]
+            },
+            "DevOps": {
+                "primary": [
+                    "pipeline", "deploy", "ci/cd", "docker", "kubernetes",
+                    "k8s", "aws", "cloud", "infrastructure"
+                ],
+                "secondary": [
+                    "terraform", "container", "orchestration",
+                    "monitoring", "logging", "scaling", "provision"
+                ],
+                "technical": [
+                    "helm", "prometheus", "grafana", "istio",
+                    "jenkins", "gitlab", "argocd", "ansible",
+                    "eks", "gke", "aks", "pod", "node", "cluster"
+                ]
+            },
+            "Testing": {
+                "primary": [
+                    "test", "coverage", "unit test", "e2e",
+                    "integration", "automation", "qa"
+                ],
+                "secondary": [
+                    "verify", "validate", "assert", "mock",
+                    "stub", "fixture", "harness"
+                ],
+                "technical": [
+                    "jest", "cypress", "selenium", "junit",
+                    "pytest", "mocha", "karma", "jasmine",
+                    "cucumber", "behave", "gherkin"
+                ]
             }
         }
 
-        # Refined priority system with sub-categories
-        self.category_priority = {
-            "Meeting": {
-                "priority": 1,
-                "context_rules": {
-                    "sprint review": "Planning",     # Override to Planning
-                    "roadmap review": "Planning",    # Override to Planning
-                    "technical review": "Design",    # Override to Design
-                    "code review": "Development",    # Override to Development
-                    "research presentation": "Research"  # Override to Research
-                }
+        # Add technical complexity levels
+        self.complexity_levels = {
+            "high": 1.2,    # Complex technical tasks
+            "medium": 1.0,  # Standard tasks
+            "low": 0.8     # Simple tasks
+        }
+        
+        # Add category combinations with weighted relationships
+        self.category_relationships = {
+            "Performance": {
+                "Development": 0.8,
+                "DevOps": 0.7,
+                "Security": 0.6
             },
-            "Research": {
-                "priority": 2,
-                "sub_categories": {
-                    "performance analysis": 1,
-                    "investigation": 2,
-                    "evaluation": 3
-                }
+            "Security": {
+                "Development": 0.7,
+                "DevOps": 0.8,
+                "Performance": 0.6
             },
-            "Design": {
-                "priority": 3,
-                "sub_categories": {
-                    "architecture": 1,
-                    "system design": 2,
-                    "ui/ux": 3
-                }
-            },
-            "Planning": {
-                "priority": 4,
-                "sub_categories": {
-                    "sprint planning": 1,
-                    "roadmap": 2,
-                    "backlog": 3
-                }
-            },
-            "Development": {
-                "priority": 5,
-                "sub_categories": {
-                    "implementation": 1,
-                    "bug fix": 2,
-                    "maintenance": 3
-                }
+            "DevOps": {
+                "Security": 0.8,
+                "Performance": 0.7,
+                "Development": 0.6
             }
         }
-
-        self.keywords = {
-            "Development": [
-                ("implement", 4.5),
-                ("implementation", 4.5),
-                ("code", 4.0),
-                ("develop", 4.0),
-                ("bug fix", 4.0),
-                ("fix bug", 4.0),
-                ("bug", 3.5),
-                ("fix", 3.5),
-                ("api", 3.0),
-                ("database", 3.0),
-                ("deploy", 3.0),
-                ("test", 2.5),
-                ("debug", 2.5),
-                ("optimize", 2.5),
-                ("refactor", 2.5),
-                ("maintenance", 2.5),
-                ("update", 2.0),
-                ("configuration", 2.0),
-                ("setup", 2.0),
-                ("install", 2.0),
-                ("build", 2.0),
-                ("integration", 2.0),
-                ("ci/cd", 2.5)
+        
+        # Add technical stack keywords
+        self.tech_stack_keywords = {
+            "Frontend": [
+                "react", "vue", "angular", "webpack", "babel",
+                "css", "sass", "less", "styled-components"
             ],
-            "Design": [
-                ("architecture", 4.5),
-                ("system architecture", 5.0),
-                ("technical design", 5.0),
-                ("design system", 4.5),
-                ("design", 4.0),
-                ("system design", 4.5),
-                ("api design", 4.5),
-                ("infrastructure", 3.5),
-                ("wireframe", 3.0),
-                ("mockup", 3.0),
-                ("prototype", 2.5),
-                ("layout", 2.5),
-                ("ui/ux", 4.0),
-                ("ui", 2.5),
-                ("ux", 2.5),
-                ("interface", 2.0),
-                ("diagram", 2.0)
+            "Backend": [
+                "node", "python", "java", "go", "rust",
+                "django", "flask", "spring", "express"
             ],
-            "Research": [
-                ("investigate", 4.5),
-                ("investigation", 4.5),
-                ("research", 4.0),
-                ("analyze", 4.0),
-                ("analysis", 4.0),
-                ("performance analysis", 4.5),
-                ("debug", 3.0),
-                ("bottleneck", 2.5),
-                ("study", 2.5),
-                ("evaluate", 2.5),
-                ("evaluation", 2.5),
-                ("explore", 2.0),
-                ("review", 2.0),
-                ("compare", 2.0),
-                ("assess", 2.0),
-                ("root cause", 3.0),
-                ("proof of concept", 3.5),
-                ("poc", 3.0)
+            "Database": [
+                "postgresql", "mysql", "mongodb", "redis", "elasticsearch",
+                "cassandra", "dynamodb", "oracle"
             ],
-            "Meeting": [
-                ("team meeting", 4.5),
-                ("meeting", 3.5),        # Reduced from 4.5
-                ("standup", 3.5),
-                ("sync", 3.0),
-                ("discussion", 3.0),
-                ("review", 1.5),         # Further reduced
-                ("team", 1.5),
-                ("together", 1.0),
-                ("present", 2.0),
-                ("demo", 2.0)
-            ],
-            "Planning": [
-                ("sprint review", 4.5),  # Added
-                ("roadmap review", 4.5), # Added
-                ("sprint planning", 4.5),
-                ("planning", 4.0),
-                ("roadmap", 3.5),
-                ("timeline", 3.0),
-                ("backlog", 3.0),
-                ("sprint", 2.5),         # Increased
-                ("milestone", 2.5)
+            "Cloud": [
+                "aws", "gcp", "azure", "kubernetes", "docker",
+                "lambda", "ec2", "s3", "cloudfront"
             ]
         }
 
-        # Compile patterns with word boundaries
-        self.patterns = {
-            category: [
-                (re.compile(rf'\b{re.escape(word)}\b', re.I), weight) 
-                for word, weight in keywords
-            ]
-            for category, keywords in self.keywords.items()
-        }
-        
-        logger.info("LocalPredictor initialized with refined categories and patterns")
-
-        # Add ambiguous terms list
-        self.AMBIGUOUS_TERMS = {
-            "review": -3.0,
-            "discuss": -2.0,
-            "status": -2.0,
-            "check": -2.0,
-            "update": -2.0,
-            "current": -1.0,
-            "system": -2.0,
-            "general": -2.0
-        }
-
-        # Add compound terms with higher weights
-        self.COMPOUND_TERMS = {
-            "Meeting": {
-                "code review meeting": 5.0,
-                "review meeting": 4.5,
-                "team review": 4.0,
-                "team discussion": 4.0,
-                "team sync": 4.0,
-                "standup meeting": 4.5
-            },
-            "Design": {
-                "api design": 4.5,
-                "system design": 4.5,
-                "architecture design": 4.5,
-                "technical design": 4.5
-            },
-            "Research": {
-                "performance analysis": 4.5,
-                "technical analysis": 4.0,
-                "investigate performance": 4.0
-            }
-        }
-
-        # Technical term boosters
-        self.TECHNICAL_TERMS = {
-            "architecture": 2.0,
-            "technical": 2.0,
-            "implementation": 2.0,
-            "performance": 2.0,
-            "system": 1.0,
-            "infrastructure": 1.5,
-            "database": 1.5,
-            "api": 1.5
-        }
-
-        # Category mixing penalties
-        self.CATEGORY_MIXING = {
-            ("technical", "review"): -5.0,
-            ("architecture", "planning"): -5.0,
-            ("api", "planning"): -5.0,
-            ("development", "roadmap"): -5.0,
-            ("system", "design"): -3.0,
-            ("performance", "analysis"): -2.0  # Less penalty for natural combinations
-        }
-
-        # Pure category indicators (strong single-category phrases)
-        self.PURE_INDICATORS = {
-            "Meeting": ["team standup", "weekly sync", "daily standup"],
-            "Planning": ["sprint planning", "roadmap planning", "backlog grooming"],
-            "Research": ["performance analysis", "technical investigation"],
-            "Design": ["system architecture", "technical design"],
-            "Development": ["code implementation", "bug fixing"]
-        }
-
-        # Natural combinations (less penalty)
-        self.NATURAL_COMBINATIONS = {
-            ("sprint", "planning"): -2.0,
-            ("performance", "analysis"): -2.0,
-            ("system", "architecture"): -2.0,
-            ("technical", "design"): -2.0
-        }
-
-        # Conflicting combinations (higher penalty)
-        self.CONFLICTING_COMBINATIONS = {
-            ("research", "development"): -5.0,
-            ("design", "planning"): -5.0,
-            ("technical", "planning"): -5.0,
-            ("architecture", "development"): -5.0
-        }
-
-    def predict(self, title: str, description: str) -> dict:
-        text = f"{title.lower()} {description.lower()}"
-        
-        # Check for strong combinations first
-        for combination in self.STRONG_COMBINATIONS:
-            if all(term in text.lower() for term in combination):
-                # Determine primary category based on first word in title
-                title_words = title.lower().split()
-                for word in title_words:
-                    for category in self.keywords.keys():
-                        if any(kw[0] in word for kw in self.keywords[category]):
-                            return {
-                                "category": category,
-                                "confidence": self.CONFIDENCE_THRESHOLDS["LOW"]
-                            }
-        
-        # Regular prediction logic
-        scores, matches = self._calculate_scores(title, description)
-        
-        # Combine scores
-        scores = {
-            category: scores.get(category, 0)
-            for category in self.keywords.keys()
-        }
-        
-        if not any(scores.values()):
-            return self._fallback_prediction(text)
-            
-        sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-        top_score = sorted_scores[0][1]
-        
-        # Adjust competitor threshold
-        close_competitors = [
-            (cat, score) for cat, score in sorted_scores 
-            if score >= top_score * 0.85  # More lenient threshol
-        ]
-        
-        if len(close_competitors) > 1:
-            logger.info(f"Close competition between: {close_competitors}")
-            best_category = self._resolve_competition(close_competitors, text)
-            confidence = self._calculate_confidence(
-                len(close_competitors),
-                matches[best_category],
-                top_score,
-                text
-            )
+    def load_model(self) -> None:
+        """Load the trained model if it exists"""
+        if os.path.exists(self.model_path):
+            self.pipeline = joblib.load(self.model_path)
         else:
-            best_category = sorted_scores[0][0]
-            confidence = self._calculate_confidence(
-                1,
-                matches[best_category],
-                top_score,
-                text
-            )
+            raise FileNotFoundError("No trained model found. Please run training first.")
+
+    def _determine_category(self, title: str, description: str) -> str:
+        """Determine category with improved accuracy"""
+        text = f"{title.lower()} {description.lower()}"
+        scores = {}
         
-        logger.info(f"Scores: {scores}")
-        logger.info(f"Matches: {matches}")
-        logger.info(f"Selected: {best_category} ({confidence}%)")
+        # Calculate scores for each category
+        for category in self.category_keywords:
+            category_score = 0
+            
+            # Primary keywords (highest weight)
+            primary_matches = sum(1 for k in self.category_keywords[category]["primary"] 
+                                if k in text)
+            category_score += primary_matches * 4  # Increased from 3
+            
+            # Secondary keywords
+            secondary_matches = sum(1 for k in self.category_keywords[category]["secondary"] 
+                                  if k in text)
+            category_score += secondary_matches * 2
+            
+            # Apply category-specific rules
+            if category == "Bug_Fix" and ("fix" in text or "error" in text or "bug" in text):
+                category_score += 4
+            
+            if category == "Feature" and ("add" in text or "create" in text or "implement" in text):
+                category_score += 3
+            
+            if category == "Security" and ("security" in text or "auth" in text or "protect" in text):
+                category_score += 4
+            
+            scores[category] = category_score
+        
+        # Special case handling with higher weights
+        if "optimize" in text or "performance" in text:
+            scores["Performance"] = scores.get("Performance", 0) + 4
+        
+        if "security" in text or "audit" in text:
+            scores["Security"] = scores.get("Security", 0) + 4
+        
+        if "doc" in text or "guide" in text:
+            scores["Documentation"] = scores.get("Documentation", 0) + 4
+        
+        if "test" in text:
+            scores["Testing"] = scores.get("Testing", 0) + 4
+        
+        # Fix common misclassifications
+        if "fix" in text and scores.get("Bug_Fix", 0) == 0:
+            scores["Bug_Fix"] = scores.get("Bug_Fix", 0) + 3
+        
+        if "api" in text and "doc" not in text:
+            scores["Development"] = scores.get("Development", 0) + 2
+        
+        # Get category with highest score
+        max_score = max(scores.values())
+        if max_score == 0:
+            return "Development"  # Default category
+        
+        # Return the category with highest score
+        return max(scores.items(), key=lambda x: x[1])[0]
+
+    def train(self, training_data: List[Tuple[str, str]]) -> None:
+        """Train the model with example data including edge cases"""
+        texts = []
+        labels = []
+        
+        # Add edge cases to training data
+        edge_cases = [
+            ("", "Empty title test"),
+            ("No description", ""),
+            ("Quick sync", "Very short"),
+            ("Design and Development of API", "Mixed category example"),
+            ("Research spike for new feature", "Mixed research and development"),
+            ("Planning meeting for architecture", "Mixed planning and meeting"),
+        ]
+        training_data.extend(edge_cases)
+        
+        # Prepare training data with proper labels
+        for title, desc in training_data:
+            texts.append(f"{title} {desc}")
+            # Get both keyword-based and ML predictions
+            category = self._determine_category(title or "", desc or "")
+            labels.append(category)
+        
+        # Train the pipeline with class weights
+        self.pipeline.fit(texts, labels)
+        
+        # Save the trained pipeline
+        joblib.dump(self.pipeline, self.model_path)
+        print(f"Model trained with {len(texts)} examples")
+
+    def _calculate_confidence_score(self, text: str, category: str) -> float:
+        """Calculate confidence score with improved weighting"""
+        text = text.lower()
+        score = 70.0  # Base confidence
+        
+        # Primary keyword matches (worth 5 points each)
+        if category in self.category_keywords:
+            primary_matches = sum(1 for k in self.category_keywords[category]["primary"] 
+                                if k in text)
+            score += primary_matches * 5.0
+            
+            # Secondary keyword matches (worth 3 points each)
+            secondary_matches = sum(1 for k in self.category_keywords[category]["secondary"] 
+                                  if k in text)
+            score += secondary_matches * 3.0
+            
+            # Technical keyword matches (worth 4 points each)
+            if "technical" in self.category_keywords[category]:
+                technical_matches = sum(1 for k in self.category_keywords[category]["technical"] 
+                                      if k in text)
+                score += technical_matches * 4.0
+        
+        # Adjust for technical complexity
+        complexity_score = self._assess_technical_complexity(text)
+        score += complexity_score * 5.0
+        
+        # Adjust for category relationships
+        relationship_score = self._calculate_relationship_score(text, category)
+        score += relationship_score * 5.0
+        
+        return min(95.0, score)  # Cap at 95%
+
+    def _assess_technical_complexity(self, text: str) -> float:
+        """Assess the technical complexity of the task"""
+        text = text.lower()
+        complexity_score = 0.0
+        
+        # Check for technical terms across different stacks
+        for stack, keywords in self.tech_stack_keywords.items():
+            matches = sum(1 for k in keywords if k in text)
+            if matches > 0:
+                complexity_score += 0.2
+        
+        # Check for architecture terms
+        architecture_terms = [
+            "microservices", "distributed", "scalable", "redundant",
+            "fault-tolerant", "high-availability", "load-balanced"
+        ]
+        if any(term in text for term in architecture_terms):
+            complexity_score += 0.3
+        
+        return min(1.0, complexity_score)
+
+    def _calculate_relationship_score(self, text: str, category: str) -> float:
+        """Calculate score based on category relationships"""
+        text = text.lower()
+        score = 0.0
+        
+        if category in self.category_relationships:
+            for related_category, weight in self.category_relationships[category].items():
+                if any(k in text for k in self.category_keywords[related_category]["primary"]):
+                    score += weight
+        
+        return min(1.0, score)
+
+    def predict(self, title: str, description: str) -> Dict[str, any]:
+        """Enhanced prediction with technical analysis"""
+        text = f"{title} {description}".lower()
+        
+        # Get base prediction using keyword matching
+        category = self._determine_category(title, description)
+        
+        # Calculate confidence
+        confidence = self._calculate_confidence_score(text, category)
+        
+        # Check for technical complexity
+        complexity = self._assess_technical_complexity(text)
+        
+        # Get related categories
+        related = self._get_related_categories(text, category)
         
         return {
-            "category": best_category,
-            "confidence": round(confidence, 2)
+            "category": category,
+            "confidence": confidence,
+            "technical_complexity": complexity,
+            "related_categories": related
         }
 
-    def _calculate_scores(self, title: str, description: str) -> Tuple[Dict[str, float], Dict[str, List[str]]]:
-        scores = {category: 0.0 for category in self.keywords.keys()}
-        matches = {category: [] for category in self.keywords.keys()}
+    def _get_related_categories(self, text: str, primary_category: str) -> List[str]:
+        """Get related categories based on text analysis"""
+        related = []
         
-        title_boost = 2.5
+        if primary_category in self.category_relationships:
+            for category, weight in self.category_relationships[primary_category].items():
+                if any(k in text for k in self.category_keywords[category]["primary"]):
+                    related.append(category)
         
-        for category, patterns in self.patterns.items():
-            for pattern, weight in patterns:
-                title_matches = pattern.findall(title.lower())
-                desc_matches = pattern.findall(description.lower())
-                
-                if title_matches:
-                    score = weight * len(title_matches) * title_boost
-                    scores[category] += score
-                    matches[category].extend(title_matches)
-                    
-                if desc_matches:
-                    score = weight * len(desc_matches)
-                    scores[category] += score
-                    matches[category].extend(desc_matches)
-                    
-        return scores, matches
+        return related[:2]  # Return top 2 related categories
 
-    def _resolve_competition(self, competitors: List[Tuple[str, float]], text: str) -> str:
-        # First try to resolve using primary category priority
-        best_priority = min(
-            competitors,
-            key=lambda x: self.category_priority[x[0]]["priority"]
-        )
+    def _check_mixed_categories(self, text: str) -> float:
+        """Check text for mixed category indicators"""
+        text = text.lower()
+        score = 0.0
         
-        # If clear winner by priority, return it
-        if len([c for c in competitors if self.category_priority[c[0]]["priority"] == 
-                self.category_priority[best_priority[0]]["priority"]]) == 1:
-            return best_priority[0]
+        # Check for explicit mixed category terms
+        for combo, keywords in self.category_keywords['Mixed'].items():
+            if any(k in text for k in keywords):
+                score += 0.4  # Strong indicator of mixed category
+        
+        # Check for multiple category indicators
+        categories_found = set()
+        for category, terms in self.category_keywords.items():
+            if category != 'Mixed':
+                primary_matches = sum(1 for k in terms['primary'] if k in text)
+                secondary_matches = sum(1 for k in terms['secondary'] if k in text)
+                if primary_matches > 0 or secondary_matches > 1:
+                    categories_found.add(category)
+        
+        if len(categories_found) > 1:
+            score += 0.3  # Multiple categories detected
             
-        # If still tied, use sub-categories
-        return self._resolve_by_subcategory(
-            [c[0] for c in competitors if self.category_priority[c[0]]["priority"] == 
-             self.category_priority[best_priority[0]]["priority"]],
-            text
-        )
+        return min(1.0, score)  # Cap at 1.0
 
-    def _resolve_by_subcategory(self, categories: List[str], text: str) -> str:
-        # Default to first category if no sub-category matches
-        if not categories:
-            return categories[0]
+    def _get_keyword_scores(self, text: str) -> Dict[str, float]:
+        """Calculate keyword-based scores for each category"""
+        scores = {}
+        text = text.lower()
+        
+        for category, keywords in self.category_keywords.items():
+            score = sum(2 if keyword in text.split() else 1 
+                       for keyword in keywords if keyword in text)
+            scores[category] = score / max(len(keywords), 1)  # Normalize score
             
-        best_score = float('inf')
-        best_category = categories[0]
-        
-        for category in categories:
-            for sub_cat, priority in self.category_priority[category]["sub_categories"].items():
-                if sub_cat in text:
-                    if priority < best_score:
-                        best_score = priority
-                        best_category = category
-                        
-        return best_category
+        # Normalize all scores to [0,1]
+        max_score = max(scores.values()) if scores else 1
+        return {cat: score/max_score for cat, score in scores.items()}
 
-    def _calculate_confidence(self, num_competitors: int, matches: List[str], score: float, text: str) -> float:
-        # Start with base confidence
-        base_confidence = self.CONFIDENCE_THRESHOLDS["MEDIUM"]
+    def batch_predict(self, tasks: List[Tuple[str, str]]) -> List[Dict[str, float]]:
+        """Batch prediction for multiple tasks"""
+        texts = [f"{title} {desc}" for title, desc in tasks]
+        predictions = self.pipeline.predict(texts)
+        probabilities = self.pipeline.predict_proba(texts)
         
-        # Check for pure category indicators
-        pure_category = False
-        for category, indicators in self.PURE_INDICATORS.items():
-            if any(indicator in text.lower() for indicator in indicators):
-                base_confidence = self.CONFIDENCE_THRESHOLDS["HIGH"]
-                pure_category = True
-                break
-        
-        # Apply natural combination adjustments
-        natural_penalty = sum(
-            penalty 
-            for (term1, term2), penalty in self.NATURAL_COMBINATIONS.items() 
-            if term1 in text.lower() and term2 in text.lower()
-        )
-        
-        # Apply conflicting combination penalties
-        conflict_penalty = sum(
-            penalty 
-            for (term1, term2), penalty in self.CONFLICTING_COMBINATIONS.items() 
-            if term1 in text.lower() and term2 in text.lower()
-        )
-        
-        # Multiple category penalty
-        category_penalty = 0
-        if num_competitors > 1:
-            category_penalty = (num_competitors - 1) * 3.0
-            if pure_category:
-                category_penalty *= 0.5  # Reduce penalty for pure categories
-        
-        # Calculate final confidence
-        adjusted_confidence = base_confidence + natural_penalty + conflict_penalty - category_penalty
-        
-        # Enforce maximum for mixed cases
-        if num_competitors > 1:
-            adjusted_confidence = min(adjusted_confidence, self.CONFIDENCE_THRESHOLDS["MEDIUM_HIGH"])
-        
-        # Enforce minimum for pure cases
-        if pure_category and conflict_penalty == 0:
-            adjusted_confidence = max(adjusted_confidence, self.CONFIDENCE_THRESHOLDS["MEDIUM_HIGH"])
-        
-        # Final bounds check
-        adjusted_confidence = max(
-            min(adjusted_confidence, self.CONFIDENCE_THRESHOLDS["VERY_HIGH"]),
-            self.CONFIDENCE_THRESHOLDS["LOW"]
-        )
-        
-        return round(adjusted_confidence, 2)
-
-    def _fallback_prediction(self, text: str) -> dict:
-        """Fallback logic for when no keywords match."""
-        # Common technical words that suggest Development
-        technical_words = ['system', 'config', 'setup', 'check', 'verify', 'update']
-        if any(word in text for word in technical_words):
-            return {
-                "category": "Development",
-                "confidence": 75.0
+        return [
+            {
+                "category": pred,
+                "confidence": float(np.max(prob) * 100)
             }
-            
-        # Default fallback
-        return {
-            "category": "Development",
-            "confidence": 70.0
-        }
+            for pred, prob in zip(predictions, probabilities)
+        ]
 
-    def _check_compound_terms(self, text: str) -> Dict[str, float]:
-        scores = {category: 0.0 for category in self.keywords.keys()}
+    def _get_top_categories(self, text: str) -> Tuple[str, str]:
+        """Get the top two categories based on keyword matches"""
+        scores = {}
+        text = text.lower()
         
-        for category, terms in self.COMPOUND_TERMS.items():
-            for term, weight in terms.items():
-                if term in text.lower():
-                    scores[category] += weight
-                    logger.info(f"Found compound term: {term} for {category}")
-                    
-        return scores
+        # Calculate scores for each category
+        for category, terms in self.category_keywords.items():
+            if category != 'Mixed':
+                primary_score = sum(2 for k in terms['primary'] if k in text)
+                secondary_score = sum(1 for k in terms['secondary'] if k in text)
+                scores[category] = primary_score + secondary_score
+        
+        # Get top two categories
+        sorted_categories = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        return sorted_categories[0][0], sorted_categories[1][0]
+
+    def _get_keyword_matches(self, text: str) -> Dict[str, int]:
+        """Count keyword matches for each category"""
+        matches = {}
+        text = text.lower()
+        
+        for category, terms in self.category_keywords.items():
+            if category != 'Mixed':
+                primary_matches = sum(1 for k in terms['primary'] if k in text)
+                secondary_matches = sum(1 for k in terms['secondary'] if k in text)
+                matches[category] = {
+                    "primary": primary_matches,
+                    "secondary": secondary_matches,
+                    "total": primary_matches + secondary_matches
+                }
+        
+        return matches
+
+    def _calculate_keyword_score(self, text: str, category: str) -> float:
+        """Calculate weighted keyword score"""
+        text = text.lower()
+        score = 0.0
+        
+        if category in self.category_keywords:
+            keywords = self.category_keywords[category]
+            
+            # Primary keywords (strongest)
+            if 'primary' in keywords:
+                score += sum(2.0 for k in keywords['primary'] if k in text)
+            
+            # Secondary keywords (medium)
+            if 'secondary' in keywords:
+                score += sum(1.0 for k in keywords['secondary'] if k in text)
+            
+            # Weak keywords (lowest) - only present in some categories
+            if 'weak' in keywords:
+                score += sum(0.5 for k in keywords['weak'] if k in text)
+            
+        return score
+
+    def save_model(self, filepath: str) -> None:
+        """Save the trained pipeline to a file"""
+        # Create the directory if it doesn't exist
+        Path(filepath).parent.mkdir(parents=True, exist_ok=True)
+        # Save the pipeline instead of model
+        joblib.dump(self.pipeline, filepath)
 

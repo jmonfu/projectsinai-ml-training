@@ -12,11 +12,11 @@ smartsynch/
 │       └── predictions.py    # FastAPI prediction endpoints
 ├── models/
 │   ├── __init__.py
-│   ├── predictor.py         # Local predictor implementation
-│   └── factory.py           # Predictor factory
+│   └── predictor.py         # ML predictor implementation
 ├── utils/
 │   └── text.py             # Text processing utilities
-├── tests/                   # Unit tests directory
+├── train.py                # Training script
+├── tests/                  # Unit tests directory
 │   └── test_predictions.py
 ├── requirements.txt        # Production dependencies
 └── .gitignore             # Git ignore file

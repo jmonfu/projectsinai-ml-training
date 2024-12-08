@@ -32,3 +32,71 @@ __pycache__/
 .env.development
 docker_bash_command.txt
 ml-training/SmartSynch/smartsynch/api/__pycache__/main.cpython-310.pyc
+ml-training/SmartSynch/test_predictions.sh
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ML Training
+ml-training/SmartSynch/models/*
+ml-training/SmartSynch/data/*.json
+!ml-training/SmartSynch/data/training_data.json
+ml-training/SmartSynch/logs/
+!ml-training/SmartSynch/shell_scripts/*.sh
+
+# IDE/Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env*.local
+
+# Testing
+coverage/
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+
+# Build
+build/
+dist/
+*.pyc
+__pycache__/
+
+# OS
+.DS_Store
+Thumbs.db

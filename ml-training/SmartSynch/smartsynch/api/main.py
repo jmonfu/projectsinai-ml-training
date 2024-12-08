@@ -11,6 +11,9 @@ from typing import List, Dict, Optional
 import logging
 import os
 from dotenv import load_dotenv
+from smartsynch.api.routes import predictions
+from pydantic import BaseModel
+from smartsynch.models.predictor import MLPredictor
 
 # Set up logging
 logging.basicConfig(
@@ -21,8 +24,8 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="SmartSynch Task Categorization API",
-    description="API for automatic task categorization",
+    title="SmartSynch Task Categorizer",
+    description="API for automatic task categorization using ML",
     version="1.0.0"
 )
 
@@ -41,18 +44,16 @@ load_dotenv(env_file)
 
 # Add this after load_dotenv to debug
 logger.info(f"Loading env file: {env_file}")
-logger.info(f"HUGGINGFACE_TOKEN present: {bool(os.getenv('HUGGINGFACE_TOKEN'))}")
-
-# Verify HUGGINGFACE_TOKEN is loaded
-token = os.getenv("HUGGINGFACE_TOKEN")
-if not token:
-    logger.warning("HUGGINGFACE_TOKEN not found in environment!")
 
 # Import routes
-from .routes import predictions, health
+from .routes import health
 
 # Include routers
-app.include_router(predictions.router, prefix="/api/smartsynch/v1")
+app.include_router(
+    predictions.router,
+    prefix="/api/smartsynch/v1",
+    tags=["predictions"]
+)
 app.include_router(health.router, prefix="/api/smartsynch/v1")
 
 # Add a health check endpoint (Render will use this)
@@ -60,8 +61,34 @@ app.include_router(health.router, prefix="/api/smartsynch/v1")
 async def health_check():
     return {
         "status": "healthy",
-        "huggingface_token": "configured" if token else "missing"
+        "model": "ML classifier loaded"
     }
+
+# Add prediction models
+class TaskInput(BaseModel):
+    title: str
+    description: str = ""
+
+class PredictionResponse(BaseModel):
+    category: str
+    confidence: float
+
+# Add prediction endpoint
+@app.post("/api/smartsynch/v1/predict", response_model=PredictionResponse)
+async def predict_task(task: TaskInput):
+    try:
+        predictor = MLPredictor()
+        result = predictor.predict(task.title, task.description)
+        return PredictionResponse(
+            category=result["category"],
+            confidence=result["confidence"]
+        )
+    except Exception as e:
+        logger.error(f"Prediction error: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Prediction failed"}
+        )
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):

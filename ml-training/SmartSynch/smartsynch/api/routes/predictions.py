@@ -6,14 +6,17 @@ API endpoints for task categorization predictions.
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-import logging
-from ...models.predictor import LocalPredictor
+from smartsynch.models.predictor import MLPredictor
+import os
 
-logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Initialize the predictor
-predictor = LocalPredictor()
+# Initialize predictor
+predictor = MLPredictor()
+
+# Load trained model if it exists
+if os.path.exists("models/task_classifier.joblib"):
+    predictor.load_model()
 
 class TaskRequest(BaseModel):
     title: str
@@ -25,10 +28,8 @@ class PredictionResponse(BaseModel):
 
 @router.post("/predict", response_model=PredictionResponse)
 async def predict_task(task: TaskRequest):
-    """Predict category for a single task"""
     try:
         result = predictor.predict(task.title, task.description)
-        return PredictionResponse(**result)
+        return result
     except Exception as e:
-        logger.error(f"Prediction error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e)) 
