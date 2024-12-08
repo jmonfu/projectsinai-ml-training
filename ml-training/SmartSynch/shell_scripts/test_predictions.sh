@@ -1189,4 +1189,99 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 
 sleep 1
 
+# Additional UI/UX Tasks
+echo -e "\n${GREEN}162. Testing: Accessibility Compliance Enhancement${NC}"
+curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Accessibility Compliance Enhancement",
+    "description": "Implement WCAG 2.1 AA compliance including screen reader support and keyboard navigation."
+  }' | jq '.'
+
+sleep 1
+
+echo -e "\n${GREEN}163. Testing: Motion Design System${NC}"
+curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Motion Design System",
+    "description": "Create standardized animation library for micro-interactions and transitions."
+  }' | jq '.'
+
+sleep 1
+
+# Additional Plugin Architecture Tasks
+echo -e "\n${GREEN}164. Testing: Plugin System Architecture${NC}"
+curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Plugin System Architecture",
+    "description": "Design and implement extensible plugin architecture with versioning and dependency management."
+  }' | jq '.'
+
+sleep 1
+
+echo -e "\n${GREEN}165. Testing: Dynamic Form Builder${NC}"
+curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Dynamic Form Builder",
+    "description": "Create drag-and-drop form builder with custom validation and conditional logic."
+  }' | jq '.'
+
+sleep 1
+
+# Meeting Category
+echo -e "\n${GREEN}166. Testing: Sprint Planning Meeting${NC}"
+curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Sprint Planning Meeting",
+    "description": "Quarterly sprint planning with team leads and stakeholders."
+  }' | jq '.'
+
+sleep 1
+
+echo -e "\n${GREEN}167. Testing: Architecture Review Meeting${NC}"
+curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Architecture Review Meeting",
+    "description": "Review proposed system architecture changes with senior engineers."
+  }' | jq '.'
+
+sleep 1
+
+# Research Category
+echo -e "\n${GREEN}168. Testing: AI Integration Research${NC}"
+curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "AI Integration Research",
+    "description": "Research machine learning frameworks for recommendation engine."
+  }' | jq '.'
+
+sleep 1
+
+echo -e "\n${GREEN}169. Testing: Blockchain Feasibility Study${NC}"
+curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Blockchain Feasibility Study",
+    "description": "Evaluate blockchain platforms for digital asset tracking system."
+  }' | jq '.'
+
+sleep 1
+
+# Other Category
+echo -e "\n${GREEN}170. Testing: Office Network Upgrade${NC}"
+curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Office Network Upgrade",
+    "description": "Coordinate with IT for office network infrastructure upgrade."
+  }' | jq '.'
+
+sleep 1
+
 
