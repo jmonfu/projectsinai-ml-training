@@ -11,7 +11,12 @@ services:
       pip install -r requirements.txt
       pip install -e .
     startCommand: |
-      export PYTHONPATH=/opt/render/project/src && \
+      echo "Python path before:" $PYTHONPATH
+      export PYTHONPATH=$PYTHONPATH:/opt/render/project/src/ml-training/SmartSynch
+      echo "Python path after:" $PYTHONPATH
+      echo "Current directory:" $(pwd)
+      echo "Directory contents:"
+      ls -la
       uvicorn smartsynch.api.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
