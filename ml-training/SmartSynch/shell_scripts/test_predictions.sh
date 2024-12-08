@@ -1,14 +1,18 @@
 #!/bin/bash
 
+# Set base URL
+BASE_URL="http://localhost:8000"
+
 # Set text colors
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
 echo -e "${GREEN}Testing Task Predictions${NC}\n"
+echo -e "${GREEN}Using API at: ${BASE_URL}${NC}\n"
 
 # Bug Fix Category
 echo -e "\n${GREEN}1. Testing: Fix Login Button Alignment${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Fix Login Button Alignment",
@@ -18,7 +22,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}2. Testing: Resolve 404 on Profile Image Upload${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Resolve 404 on Profile Image Upload",
@@ -28,7 +32,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}3. Testing: Fix Data Table Pagination${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Fix Data Table Pagination",
@@ -39,7 +43,7 @@ sleep 1
 
 # Feature Request Category
 echo -e "\n${GREEN}4. Testing: Add Export to CSV Feature${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Add Export to CSV Feature",
@@ -49,7 +53,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}5. Testing: Implement Password Reset Flow${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Implement Password Reset Flow",
@@ -60,7 +64,7 @@ sleep 1
 
 # Documentation Category
 echo -e "\n${GREEN}6. Testing: Create API Documentation${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Create API Documentation",
@@ -70,7 +74,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}7. Testing: Write Deployment Guide${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Write Deployment Guide",
@@ -81,7 +85,7 @@ sleep 1
 
 # Enhancement Category
 echo -e "\n${GREEN}8. Testing: Improve Form Validation UX${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Improve Form Validation UX",
@@ -91,7 +95,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}9. Testing: Optimize Image Upload Process${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Optimize Image Upload Process",
@@ -102,7 +106,7 @@ sleep 1
 
 # Security Category
 echo -e "\n${GREEN}10. Testing: Implement 2FA${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Implement 2FA",
@@ -112,7 +116,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}11. Testing: Security Headers Audit${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Security Headers Audit",
@@ -123,7 +127,7 @@ sleep 1
 
 # Performance Category
 echo -e "\n${GREEN}12. Testing: Dashboard Loading Optimization${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Dashboard Loading Optimization",
@@ -133,7 +137,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}13. Testing: API Response Time Improvement${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "API Response Time Improvement",
@@ -144,7 +148,7 @@ sleep 1
 
 # Testing Category
 echo -e "\n${GREEN}14. Testing: E2E Test Suite Setup${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "E2E Test Suite Setup",
@@ -154,7 +158,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}15. Testing: Unit Test Coverage${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Unit Test Coverage",
@@ -165,7 +169,7 @@ sleep 1
 
 # UI/UX Category
 echo -e "\n${GREEN}16. Testing: Design System Implementation${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Design System Implementation",
@@ -175,7 +179,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}17. Testing: Mobile Navigation Redesign${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Mobile Navigation Redesign",
@@ -186,7 +190,7 @@ sleep 1
 
 # DevOps Category
 echo -e "\n${GREEN}18. Testing: Setup CI/CD Pipeline${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Setup CI/CD Pipeline",
@@ -196,7 +200,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}19. Testing: Docker Optimization${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Docker Optimization",
@@ -207,7 +211,7 @@ sleep 1
 
 # Development Category
 echo -e "\n${GREEN}20. Testing: Implement WebSocket Integration${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Implement WebSocket Integration",
@@ -218,7 +222,7 @@ sleep 1
 
 # Design Category
 echo -e "\n${GREEN}21. Testing: Create Dark Theme${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Create Dark Theme",
@@ -229,7 +233,7 @@ sleep 1
 
 # Research Category
 echo -e "\n${GREEN}22. Testing: Evaluate GraphQL Migration${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Evaluate GraphQL Migration",
@@ -240,7 +244,7 @@ sleep 1
 
 # Meeting Category
 echo -e "\n${GREEN}23. Testing: Q2 Planning Session${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Q2 Planning Session",
@@ -251,7 +255,7 @@ sleep 1
 
 # Planning Category
 echo -e "\n${GREEN}24. Testing: Architecture Review${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Architecture Review",
@@ -262,7 +266,7 @@ sleep 1
 
 # Development Category
 echo -e "\n${GREEN}25. Testing: User Authentication Revamp${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "User Authentication Revamp",
@@ -273,7 +277,7 @@ sleep 1
 
 # Bug Fix Category
 echo -e "\n${GREEN}26. Testing: Fix Memory Leak in Chart Component${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Fix Memory Leak in Chart Component",
@@ -283,7 +287,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}27. Testing: Resolve Race Condition in User Settings${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Resolve Race Condition in User Settings",
@@ -294,7 +298,7 @@ sleep 1
 
 # Feature Request Category
 echo -e "\n${GREEN}28. Testing: Implement Collaborative Editing${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Implement Collaborative Editing",
@@ -304,7 +308,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}29. Testing: Add Custom Dashboard Widgets${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Add Custom Dashboard Widgets",
@@ -315,7 +319,7 @@ sleep 1
 
 # Documentation Category
 echo -e "\n${GREEN}30. Testing: Create Technical Architecture Docs${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Create Technical Architecture Docs",
@@ -326,7 +330,7 @@ sleep 1
 
 # Enhancement Category
 echo -e "\n${GREEN}31. Testing: Smart Search Implementation${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Smart Search Implementation",
@@ -336,7 +340,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}32. Testing: Batch Processing System${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Batch Processing System",
@@ -347,7 +351,7 @@ sleep 1
 
 # Security Category
 echo -e "\n${GREEN}33. Testing: OAuth2 Provider Integration${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "OAuth2 Provider Integration",
@@ -357,7 +361,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}34. Testing: Security Logging System${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Security Logging System",
@@ -368,7 +372,7 @@ sleep 1
 
 # Performance Category
 echo -e "\n${GREEN}35. Testing: Global State Management Optimization${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Global State Management Optimization",
@@ -379,7 +383,7 @@ sleep 1
 
 # Testing Category
 echo -e "\n${GREEN}36. Testing: Load Testing Framework${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Load Testing Framework",
@@ -389,7 +393,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}37. Testing: API Contract Testing${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "API Contract Testing",
@@ -400,7 +404,7 @@ sleep 1
 
 # UI/UX Category
 echo -e "\n${GREEN}38. Testing: Accessibility Compliance${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Accessibility Compliance",
@@ -410,7 +414,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}39. Testing: Animation System${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Animation System",
@@ -421,7 +425,7 @@ sleep 1
 
 # DevOps Category
 echo -e "\n${GREEN}40. Testing: Kubernetes Migration${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Kubernetes Migration",
@@ -432,7 +436,7 @@ sleep 1
 
 # DevOps Category
 echo -e "\n${GREEN}41. Testing: Monitoring Dashboard Setup${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Monitoring Dashboard Setup",
@@ -443,7 +447,7 @@ sleep 1
 
 # Development Category
 echo -e "\n${GREEN}42. Testing: GraphQL Federation Setup${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "GraphQL Federation Setup",
@@ -453,7 +457,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}43. Testing: Event Sourcing Implementation${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Event Sourcing Implementation",
@@ -464,7 +468,7 @@ sleep 1
 
 # Design Category
 echo -e "\n${GREEN}44. Testing: Mobile-First Redesign${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Mobile-First Redesign",
@@ -475,7 +479,7 @@ sleep 1
 
 # Research Category
 echo -e "\n${GREEN}45. Testing: AI Integration Possibilities${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "AI Integration Possibilities",
@@ -486,7 +490,7 @@ sleep 1
 
 # Meeting Category
 echo -e "\n${GREEN}46. Testing: Security Review Meeting${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Security Review Meeting",
@@ -497,7 +501,7 @@ sleep 1
 
 # Planning Category
 echo -e "\n${GREEN}47. Testing: Database Scaling Strategy${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Database Scaling Strategy",
@@ -508,7 +512,7 @@ sleep 1
 
 # Enhancement Category
 echo -e "\n${GREEN}48. Testing: Multi-tenant Architecture${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Multi-tenant Architecture",
@@ -518,7 +522,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}49. Testing: Offline Mode Support${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Offline Mode Support",
@@ -528,7 +532,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}50. Testing: Advanced Analytics Pipeline${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Advanced Analytics Pipeline",
@@ -539,7 +543,7 @@ sleep 1
 
 # Bug Fix Category
 echo -e "\n${GREEN}51. Testing: Fix Concurrent User Session Issues${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Fix Concurrent User Session Issues",
@@ -549,7 +553,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}52. Testing: Debug WebSocket Reconnection${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Debug WebSocket Reconnection",
@@ -560,7 +564,7 @@ sleep 1
 
 # Feature Request Category
 echo -e "\n${GREEN}53. Testing: AI-Powered Content Suggestions${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "AI-Powered Content Suggestions",
@@ -570,7 +574,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}54. Testing: Multi-language Support System${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Multi-language Support System",
@@ -581,7 +585,7 @@ sleep 1
 
 # Documentation Category
 echo -e "\n${GREEN}55. Testing: Performance Optimization Guide${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Performance Optimization Guide",
@@ -591,7 +595,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}56. Testing: Component Storybook${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Component Storybook",
@@ -602,7 +606,7 @@ sleep 1
 
 # Enhancement Category
 echo -e "\n${GREEN}57. Testing: Advanced Caching Strategy${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Advanced Caching Strategy",
@@ -612,7 +616,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}58. Testing: Dynamic Form Builder${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Dynamic Form Builder",
@@ -623,7 +627,7 @@ sleep 1
 
 # Security Category
 echo -e "\n${GREEN}59. Testing: Zero-Trust Architecture${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Zero-Trust Architecture",
@@ -633,7 +637,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}60. Testing: Crypto Wallet Integration${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Crypto Wallet Integration",
@@ -644,7 +648,7 @@ sleep 1
 
 # Performance Category
 echo -e "\n${GREEN}61. Testing: Real-time Analytics Engine${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Real-time Analytics Engine",
@@ -655,7 +659,7 @@ sleep 1
 
 # Testing Category
 echo -e "\n${GREEN}62. Testing: Visual Regression Suite${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Visual Regression Suite",
@@ -665,7 +669,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}63. Testing: Performance Benchmark Framework${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Performance Benchmark Framework",
@@ -676,7 +680,7 @@ sleep 1
 
 # UI/UX Category
 echo -e "\n${GREEN}64. Testing: Micro-interactions Library${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Micro-interactions Library",
@@ -686,7 +690,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}65. Testing: Voice Interface${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Voice Interface",
@@ -697,7 +701,7 @@ sleep 1
 
 # DevOps Category
 echo -e "\n${GREEN}66. Testing: Blue-Green Deployment${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Blue-Green Deployment",
@@ -707,7 +711,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}67. Testing: Infrastructure as Code${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Infrastructure as Code",
@@ -718,7 +722,7 @@ sleep 1
 
 # Development Category
 echo -e "\n${GREEN}68. Testing: Distributed Tracing${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Distributed Tracing",
@@ -728,7 +732,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}69. Testing: Plugin System Architecture${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Plugin System Architecture",
@@ -739,7 +743,7 @@ sleep 1
 
 # Design Category
 echo -e "\n${GREEN}70. Testing: Motion Design System${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Motion Design System",
@@ -750,7 +754,7 @@ sleep 1
 
 # Research Category
 echo -e "\n${GREEN}71. Testing: Edge Computing Strategy${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Edge Computing Strategy",
@@ -761,7 +765,7 @@ sleep 1
 
 # Meeting Category
 echo -e "\n${GREEN}72. Testing: Architecture Decision Review${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Architecture Decision Review",
@@ -772,7 +776,7 @@ sleep 1
 
 # Planning Category
 echo -e "\n${GREEN}73. Testing: Service Mesh Strategy${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Service Mesh Strategy",
@@ -783,7 +787,7 @@ sleep 1
 
 # Security Category
 echo -e "\n${GREEN}74. Testing: Blockchain Integration${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Blockchain Integration",
@@ -793,7 +797,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}75. Testing: AI Security Monitor${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "AI Security Monitor",
@@ -804,7 +808,7 @@ sleep 1
 
 # Bug Fix Category
 echo -e "\n${GREEN}76. Testing: Fix Distributed Cache Coherency${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Fix Distributed Cache Coherency",
@@ -814,7 +818,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}77. Testing: Debug GPU Memory Leak${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Debug GPU Memory Leak",
@@ -825,7 +829,7 @@ sleep 1
 
 # Feature Request Category
 echo -e "\n${GREEN}78. Testing: AR Product Visualization${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "AR Product Visualization",
@@ -835,7 +839,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}79. Testing: Smart Workflow Automation${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Smart Workflow Automation",
@@ -846,7 +850,7 @@ sleep 1
 
 # Documentation Category
 echo -e "\n${GREEN}80. Testing: System Resilience Playbook${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "System Resilience Playbook",
@@ -857,7 +861,7 @@ sleep 1
 
 # Performance Category
 echo -e "\n${GREEN}81. Testing: Database Query Optimization${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Database Query Optimization",
@@ -868,7 +872,7 @@ sleep 1
 
 # Security Category
 echo -e "\n${GREEN}82. Testing: API Rate Limiting${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "API Rate Limiting",
@@ -879,7 +883,7 @@ sleep 1
 
 # Feature Request Category
 echo -e "\n${GREEN}83. Testing: Team Collaboration Tools${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Team Collaboration Tools",
@@ -890,7 +894,7 @@ sleep 1
 
 # UI/UX Category
 echo -e "\n${GREEN}84. Testing: Responsive Data Tables${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Responsive Data Tables",
@@ -901,7 +905,7 @@ sleep 1
 
 # DevOps Category
 echo -e "\n${GREEN}85. Testing: Log Aggregation System${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Log Aggregation System",
@@ -912,7 +916,7 @@ sleep 1
 
 # Testing Category
 echo -e "\n${GREEN}86. Testing: API Fuzzing Framework${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "API Fuzzing Framework",
@@ -923,7 +927,7 @@ sleep 1
 
 # Documentation Category
 echo -e "\n${GREEN}87. Testing: API Style Guide${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "API Style Guide",
@@ -934,7 +938,7 @@ sleep 1
 
 # Enhancement Category
 echo -e "\n${GREEN}88. Testing: PDF Report Generator${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "PDF Report Generator",
@@ -945,7 +949,7 @@ sleep 1
 
 # Bug Fix Category
 echo -e "\n${GREEN}89. Testing: Fix OAuth Token Refresh${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Fix OAuth Token Refresh",
@@ -956,7 +960,7 @@ sleep 1
 
 # Research Category
 echo -e "\n${GREEN}90. Testing: Quantum Computing Readiness${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Quantum Computing Readiness",
@@ -967,7 +971,7 @@ sleep 1
 
 # Meeting Category
 echo -e "\n${GREEN}91. Testing: API Deprecation Planning${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "API Deprecation Planning",
@@ -978,84 +982,18 @@ sleep 1
 
 # Planning Category
 echo -e "\n${GREEN}92. Testing: Cloud Cost Optimization${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Cloud Cost Optimization",
-    "description": "Plan and implement cloud resource optimization strategies."
-  }' | jq '.'
-
-sleep 1
-
-# Development Category
-echo -e "\n${GREEN}93. Testing: GraphQL Subscriptions${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "GraphQL Subscriptions",
-    "description": "Implement real-time data subscriptions using GraphQL WebSocket protocol."
-  }' | jq '.'
-
-sleep 1
-
-# Design Category
-echo -e "\n${GREEN}94. Testing: Error Page Redesign${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Error Page Redesign",
-    "description": "Create user-friendly error pages with helpful recovery actions."
-  }' | jq '.'
-
-sleep 1
-
-# Security Category
-echo -e "\n${GREEN}95. Testing: GDPR Compliance Audit${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "GDPR Compliance Audit",
-    "description": "Review and ensure GDPR compliance across all data processing systems."
-  }' | jq '.'
-
-sleep 1
-
-# Performance Category
-echo -e "\n${GREEN}96. Testing: CDN Integration${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "CDN Integration",
-    "description": "Implement global CDN for static assets and API caching."
-  }' | jq '.'
-
-sleep 1
-
-# Feature Request Category
-echo -e "\n${GREEN}97. Testing: Data Visualization Tools${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Data Visualization Tools",
-    "description": "Add interactive charts and graphs with D3.js integration."
-  }' | jq '.'
-
-sleep 1
-
-# Enhancement Category
-echo -e "\n${GREEN}98. Testing: Push Notification System${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Push Notification System",
-    "description": "Implement cross-platform push notifications with user preferences."
+    "description": "Analyze and optimize cloud resource usage and costs."
   }' | jq '.'
 
 sleep 1
 
 # DevOps Category
 echo -e "\n${GREEN}99. Testing: Disaster Recovery Testing${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Disaster Recovery Testing",
@@ -1066,7 +1004,7 @@ sleep 1
 
 # Documentation Category
 echo -e "\n${GREEN}100. Testing: Security Compliance Guide${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Security Compliance Guide",
@@ -1077,7 +1015,7 @@ sleep 1
 
 # Maintenance Category
 echo -e "\n${GREEN}101. Testing: Database Maintenance Automation${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Database Maintenance Automation",
@@ -1087,7 +1025,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}102. Testing: Legacy System Migration${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Legacy System Migration",
@@ -1097,7 +1035,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}103. Testing: Technical Debt Reduction${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Technical Debt Reduction",
@@ -1108,7 +1046,7 @@ sleep 1
 
 # Integration Category
 echo -e "\n${GREEN}104. Testing: Payment Gateway Integration${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Payment Gateway Integration",
@@ -1118,7 +1056,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}105. Testing: Email Service Provider Migration${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Email Service Provider Migration",
@@ -1129,7 +1067,7 @@ sleep 1
 
 # Additional Integration Tasks
 echo -e "\n${GREEN}156. Testing: ERP System Integration${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "ERP System Integration",
@@ -1139,7 +1077,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}157. Testing: Identity Provider Integration${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Identity Provider Integration",
@@ -1149,7 +1087,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}158. Testing: Analytics Platform Integration${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Analytics Platform Integration",
@@ -1160,7 +1098,7 @@ sleep 1
 
 # Additional Mobile Features
 echo -e "\n${GREEN}159. Testing: Mobile Offline Sync${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Mobile Offline Sync",
@@ -1170,7 +1108,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}160. Testing: Mobile Push Notifications${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Mobile Push Notifications",
@@ -1180,7 +1118,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}161. Testing: Mobile Analytics Enhancement${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Mobile Analytics Enhancement",
@@ -1191,7 +1129,7 @@ sleep 1
 
 # Additional UI/UX Tasks
 echo -e "\n${GREEN}162. Testing: Accessibility Compliance Enhancement${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Accessibility Compliance Enhancement",
@@ -1201,7 +1139,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}163. Testing: Motion Design System${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Motion Design System",
@@ -1212,7 +1150,7 @@ sleep 1
 
 # Additional Plugin Architecture Tasks
 echo -e "\n${GREEN}164. Testing: Plugin System Architecture${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Plugin System Architecture",
@@ -1222,7 +1160,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}165. Testing: Dynamic Form Builder${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Dynamic Form Builder",
@@ -1233,7 +1171,7 @@ sleep 1
 
 # Meeting Category
 echo -e "\n${GREEN}166. Testing: Sprint Planning Meeting${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Sprint Planning Meeting",
@@ -1243,7 +1181,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}167. Testing: Architecture Review Meeting${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Architecture Review Meeting",
@@ -1254,7 +1192,7 @@ sleep 1
 
 # Research Category
 echo -e "\n${GREEN}168. Testing: AI Integration Research${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "AI Integration Research",
@@ -1264,7 +1202,7 @@ curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
 sleep 1
 
 echo -e "\n${GREEN}169. Testing: Blockchain Feasibility Study${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Blockchain Feasibility Study",
@@ -1275,7 +1213,7 @@ sleep 1
 
 # Other Category
 echo -e "\n${GREEN}170. Testing: Office Network Upgrade${NC}"
-curl -X POST http://localhost:8000/api/smartsynch/v1/predict \
+curl -X POST "${BASE_URL}/api/smartsynch/v1/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Office Network Upgrade",
